@@ -8,8 +8,10 @@ The application is backed by CognoDB Cloud, using openCypher and the Neo4j-compa
 
 ---
 
-## Demo & Repository Information
+## Demo & Deployment Links
 
+- Hosted Application (Website): https://devpulse-mu-ten.vercel.app/
+- Demo Link (Screen Recording Video): https://drive.google.com/file/d/1AmU4-e7sz7LuXscq-j1LLA5zYRngZDBE/view?usp=sharing
 - Hosted Backend API: https://devpulse-qpvz.onrender.com
 - API Health Endpoint: https://devpulse-qpvz.onrender.com/api/health
 - GitHub Repository: https://github.com/krishnachaitanyabalasa-del/DevPulse
@@ -142,9 +144,11 @@ That makes graph traversal a natural fit for DevPulse.
 - React 18
 - Vite
 - Modular Page CSS / Responsive UI
+- Production Deployment: Vercel
 
 ### Deployment
-- Backend: Render (Docker Container Service)
+- Application Website: Vercel (https://devpulse-mu-ten.vercel.app/)
+- Backend API: Render (https://devpulse-qpvz.onrender.com)
 - Database: CognoDB Cloud
 
 ---
@@ -612,7 +616,26 @@ npm run dev
 
 ---
 
+# Assignment Requirements Checklist
 
+| Requirement | Status |
+| :--- | :--- |
+| CognoDB Graph Database | [COMPLETED] |
+| Thoughtful Graph Data Model | [COMPLETED] |
+| Typed Relationships & Properties | [COMPLETED] |
+| Realistic Seed Script Included | [COMPLETED] |
+| Multi-Hop Cypher Traversals | [COMPLETED] |
+| Parameterized Queries | [COMPLETED] |
+| Functional Web Application | [COMPLETED] |
+| Clean UI/UX & Responsive Layout | [COMPLETED] |
+| Environment-Based Secrets | [COMPLETED] |
+| Graceful Error Handling | [COMPLETED] |
+| README Documentation | [COMPLETED] |
+| Hosted Website URL | [COMPLETED] (https://devpulse-mu-ten.vercel.app/) |
+| Hosted Backend API | [COMPLETED] (https://devpulse-qpvz.onrender.com) |
+| Screen Recording Demo Link | [COMPLETED] (https://drive.google.com/file/d/1AmU4-e7sz7LuXscq-j1LLA5zYRngZDBE/view?usp=sharing) |
+
+---
 
 # Author
 
