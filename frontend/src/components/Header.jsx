@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { 
   Search, 
   Bell,
@@ -11,7 +12,6 @@ export default function Header({
   setSearchQuery, 
   onSearchSubmit, 
   health, 
-  loading, 
   onRefresh 
 }) {
   const [seeding, setSeeding] = useState(false);
@@ -20,14 +20,14 @@ export default function Header({
     if (window.confirm('Seed CognoDB Cloud with sample Developers, Files, PRs, and Relationships?')) {
       setSeeding(true);
       try {
-        let res = await fetch('/api/seed');
-        if (!res.ok) res = await fetch('http://localhost:8080/api/seed');
-        const data = await res.json();
-        if (data.seeded) {
+        let res = await axios.get('/api/seed')
+          .catch(() => axios.get('http://localhost:8080/api/seed'));
+        const data = res.data;
+        if (data?.seeded) {
           alert('Database successfully seeded! Nodes created: ' + data.nodesCreated);
           if (onRefresh) onRefresh();
         } else {
-          alert('Seeding notice: ' + (data.error || data.message));
+          alert('Seeding notice: ' + (data?.error || data?.message));
         }
       } catch (err) {
         alert('Failed to trigger seed: ' + err.message);
@@ -86,16 +86,16 @@ export default function Header({
           borderRadius: '20px',
           fontSize: '0.78rem',
           fontWeight: 600,
-          background: '#ffffff',
-          border: '1px solid #e2e8f0',
+          background: 'var(--card-bg)',
+          border: '1px solid var(--border-color)',
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
         }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: health?.connected ? '#10b981' : '#ef4444' }} />
           <div>
-            <span style={{ fontWeight: 700, color: '#0f172a' }}>
+            <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>
               {health?.connected ? 'CognoDB Connected' : 'CognoDB Ready'}
             </span>
-            <span style={{ color: '#64748b', marginLeft: '6px', fontSize: '0.72rem' }}>
+            <span style={{ color: 'var(--text-muted)', marginLeft: '6px', fontSize: '0.72rem' }}>
               {health?.connected 
                 ? `${health.nodeCount} nodes • ${health.relationshipCount || 67} relationships` 
                 : '38 nodes • 67 relationships'}
@@ -103,14 +103,14 @@ export default function Header({
           </div>
         </div>
 
-        {/* Bell & Help Icons matching UI Image 2 */}
+        {/* Bell & Help Icons */}
         <button className="icon-btn" title="Notifications" style={{ position: 'relative' }}>
-          <Bell size={18} color="#64748b" />
+          <Bell size={18} color="var(--text-muted)" />
           <span style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: '50%', background: '#3b82f6' }} />
         </button>
 
         <button className="icon-btn" title="Help">
-          <HelpCircle size={18} color="#64748b" />
+          <HelpCircle size={18} color="var(--text-muted)" />
         </button>
       </div>
     </header>

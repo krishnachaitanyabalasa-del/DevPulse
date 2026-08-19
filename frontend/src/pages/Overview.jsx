@@ -1,7 +1,6 @@
 import React from 'react';
 import { Users, FolderGit2, GitPullRequest, FileText } from 'lucide-react';
 import MetricCard from '../components/MetricCard';
-import heroImg from '../images/image.png';
 
 export default function Overview({ 
   developers = [], 
@@ -61,16 +60,32 @@ export default function Overview({
 
         {/* Hero Content */}
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '750px', margin: '0 auto' }}>
-          
+          <h1 
+            style={{ 
+              fontSize: '3.6rem', 
+              fontWeight: 800, 
+              letterSpacing: '-0.03em', 
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #6366f1 100%)', 
+              WebkitBackgroundClip: 'text', 
+              WebkitTextFillColor: 'transparent',
+              marginBottom: '12px',
+              lineHeight: 1.1
+            }}
+          >
+            DevPulse
+          </h1>
 
-          {/* Hero Image from images/image.png */}
-          <div style={{ margin: '24px auto', maxWidth: '540px' }}>
-            <img 
-              src={heroImg} 
-              alt="DevPulse Network Graph" 
-              style={{ width: '100%', height: 'auto', maxHeight: '220px', objectFit: 'contain', filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.05))' }}
-            />
-          </div>
+          <h2 
+            style={{ 
+              fontSize: '1.25rem', 
+              fontWeight: 600, 
+              color: 'var(--text-main)', 
+              marginBottom: '16px',
+              letterSpacing: '-0.01em'
+            }}
+          >
+            Engineering Intelligence for Modern Teams
+          </h2>
 
           <p 
             style={{ 
@@ -139,7 +154,18 @@ export default function Overview({
         />
       </section>
 
-      
+      {/* Footer Copyright */}
+      <footer 
+        style={{
+          textAlign: 'center',
+          color: 'var(--text-subtle)',
+          fontSize: '0.85rem',
+          paddingTop: '20px',
+          fontWeight: 500
+        }}
+      >
+        © 2026 DevPulse. All rights reserved.
+      </footer>
     </div>
   );
 }

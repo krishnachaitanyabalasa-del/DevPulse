@@ -37,7 +37,6 @@ export default function Repositories({ repositories = [], files = [] }) {
       {filteredRepos.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
           {filteredRepos.map((repo, idx) => {
-            // Associated files for this repo from backend files list
             const associatedFiles = files.slice(idx * 2, idx * 2 + 3);
 
             return (

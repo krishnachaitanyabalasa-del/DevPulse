@@ -179,7 +179,7 @@ body {
 /* Main Workspace */
 .main-content {
   flex: 1;
-  padding: 20px 32px 40px;
+  padding: 16px 28px 24px;
   overflow-y: auto;
 }
 
@@ -188,7 +188,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   gap: 16px;
   flex-wrap: wrap;
 }

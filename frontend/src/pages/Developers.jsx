@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Search, UserCheck } from 'lucide-react';
+import { Search, UserCheck } from 'lucide-react';
 
 export default function Developers({ developers = [] }) {
   const [filterQuery, setFilterQuery] = useState('');
