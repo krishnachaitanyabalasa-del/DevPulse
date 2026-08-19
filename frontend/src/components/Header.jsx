@@ -20,8 +20,8 @@ export default function Header({
     if (window.confirm('Seed CognoDB Cloud with sample Developers, Files, PRs, and Relationships?')) {
       setSeeding(true);
       try {
-        let res = await axios.get('/api/seed')
-          .catch(() => axios.get('http://localhost:8080/api/seed'));
+        let res = await axios.get('https://devpulse-qpvz.onrender.com/api/seed')
+          .catch(() => axios.get('/api/seed'));
         const data = res.data;
         if (data?.seeded) {
           alert('Database successfully seeded! Nodes created: ' + data.nodesCreated);
@@ -56,7 +56,6 @@ export default function Header({
 
       <div className="top-controls">
         
-
         {/* CognoDB Status Pill */}
         <div style={{
           display: 'flex',
@@ -83,7 +82,6 @@ export default function Header({
           </div>
         </div>
 
-        
       </div>
     </header>
   );

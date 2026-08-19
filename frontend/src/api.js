@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
-const BACKEND_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://devpulse-qpvz.onrender.com/api';
+const BACKEND_URL = 'https://devpulse-qpvz.onrender.com/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

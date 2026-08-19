@@ -9,6 +9,8 @@ import HealthRadar from './pages/HealthRadar';
 import Repositories from './pages/Repositories';
 import Developers from './pages/Developers';
 
+const BACKEND_URL = 'https://devpulse-qpvz.onrender.com/api';
+
 export default function App() {
   const navigate = useNavigate();
 
@@ -40,7 +42,7 @@ export default function App() {
   const [reviewerResult, setReviewerResult] = useState(null);
   const [radarResult, setRadarResult] = useState(null);
 
-  const getApiUrl = (endpoint) => `/api${endpoint}`;
+  const getApiUrl = (endpoint) => `${BACKEND_URL}${endpoint}`;
 
   // Initial Fetch on Load
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function App() {
   const fetchHealth = async () => {
     try {
       let res = await fetch(getApiUrl('/health'));
-      if (!res.ok) res = await fetch('http://localhost:8080/api/health');
+      if (!res.ok) res = await fetch('/api/health');
       if (res.ok) {
         const data = await res.json();
         setHealth(data);
@@ -76,7 +78,7 @@ export default function App() {
   const fetchDevelopers = async () => {
     try {
       let res = await fetch(getApiUrl('/experts/developers'));
-      if (!res.ok) res = await fetch('http://localhost:8080/api/experts/developers');
+      if (!res.ok) res = await fetch('/api/experts/developers');
       if (res.ok) {
         const data = await res.json();
         setDevelopers(data);
@@ -87,7 +89,7 @@ export default function App() {
   const fetchFiles = async () => {
     try {
       let res = await fetch(getApiUrl('/radar/files'));
-      if (!res.ok) res = await fetch('http://localhost:8080/api/radar/files');
+      if (!res.ok) res = await fetch('/api/radar/files');
       if (res.ok) {
         const data = await res.json();
         setFiles(data);
@@ -98,7 +100,7 @@ export default function App() {
   const fetchRepositories = async () => {
     try {
       let res = await fetch(getApiUrl('/repositories'));
-      if (!res.ok) res = await fetch('http://localhost:8080/api/repositories');
+      if (!res.ok) res = await fetch('/api/repositories');
       if (res.ok) {
         const data = await res.json();
         setRepositories(data);
@@ -109,7 +111,7 @@ export default function App() {
   const fetchPullRequests = async () => {
     try {
       let res = await fetch(getApiUrl('/pull-requests'));
-      if (!res.ok) res = await fetch('http://localhost:8080/api/pull-requests');
+      if (!res.ok) res = await fetch('/api/pull-requests');
       if (res.ok) {
         const data = await res.json();
         setPullRequests(data);
@@ -120,7 +122,7 @@ export default function App() {
   const fetchExpertData = async (query) => {
     try {
       let res = await fetch(getApiUrl(`/experts?query=${encodeURIComponent(query)}`));
-      if (!res.ok) res = await fetch(`http://localhost:8080/api/experts?query=${encodeURIComponent(query)}`);
+      if (!res.ok) res = await fetch(`/api/experts?query=${encodeURIComponent(query)}`);
       if (res.ok) {
         const data = await res.json();
         setExpertResult(data);
@@ -131,7 +133,7 @@ export default function App() {
   const fetchReviewerData = async (fileName) => {
     try {
       let res = await fetch(getApiUrl(`/reviewers/recommend?file=${encodeURIComponent(fileName)}`));
-      if (!res.ok) res = await fetch(`http://localhost:8080/api/reviewers/recommend?file=${encodeURIComponent(fileName)}`);
+      if (!res.ok) res = await fetch(`/api/reviewers/recommend?file=${encodeURIComponent(fileName)}`);
       if (res.ok) {
         const data = await res.json();
         setReviewerResult(data);
@@ -142,7 +144,7 @@ export default function App() {
   const fetchRadarData = async () => {
     try {
       let res = await fetch(getApiUrl('/radar/bus-factor'));
-      if (!res.ok) res = await fetch('http://localhost:8080/api/radar/bus-factor');
+      if (!res.ok) res = await fetch('/api/radar/bus-factor');
       if (res.ok) {
         const data = await res.json();
         setRadarResult(data);
