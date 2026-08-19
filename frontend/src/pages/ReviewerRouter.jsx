@@ -6,7 +6,7 @@ export default function ReviewerRouter({ selectedFile, setSelectedFile, onSelect
   return (
     <div className="card">
       <div className="card-header">
-        <h2 className="card-title">🔀 Smart Reviewer Router</h2>
+        <h2 className="card-title">Smart Reviewer Router</h2>
       </div>
 
       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>

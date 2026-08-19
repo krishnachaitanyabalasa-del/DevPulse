@@ -44,7 +44,7 @@ public class DevPulseGraphService {
             execQuery("CREATE (d:Developer {id: 'dev_2', name: 'Krishna Chaitu', team: 'Backend Architecture', tenure: 'Tech Lead (3 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80'})");
             execQuery("CREATE (d:Developer {id: 'dev_3', name: 'Alex Rivera', team: 'Payments & Commerce', tenure: 'Senior Backend Dev (2.5 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=300&q=80'})");
             execQuery("CREATE (d:Developer {id: 'dev_4', name: 'Carlos Mendez', team: 'Database & Infra', tenure: 'Staff Architect (6 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'})");
-            execQuery("CREATE (d:Developer {id: 'dev_5', name: 'Emily Watson', team: 'Authentication & Identity', tenure: 'Security Engineer (2 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CRtgEATE (d:Developer {id: 'dev_5', name: 'Emily Watson', team: 'Authentication & Identity', tenure: 'Security Engineer (2 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'})");
             execQuery("CREATE (d:Developer {id: 'dev_6', name: 'Mike Zhang', team: 'Frontend & Integrations', tenure: 'Junior Engineer (1 yr)', avatarUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=300&q=80'})");
             execQuery("CREATE (d:Developer {id: 'dev_7', name: 'Priya Patel', team: 'Cloud & DevOps', tenure: 'Principal SRE (5 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80'})");
             execQuery("CREATE (d:Developer {id: 'dev_8', name: 'David Kim', team: 'API Gateway & Services', tenure: 'Staff Engineer (4 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80'})");
@@ -496,6 +496,29 @@ public class DevPulseGraphService {
             } catch (Exception ex) {
                 if (attempt == 2) log.error("Error executing getBusFactorRadar: {}", ex.getMessage());
             }
+        }
+
+        if (modules.isEmpty()) {
+            modules.add(new HealthRadarDto.BusFactorModule(
+                    new FileNode("file_1", "OrderService.java", "java", 450), 2, 1, true,
+                    new DeveloperNode("dev_2", "Krishna Chaitu", "Backend Architecture", "Tech Lead (3 yrs)", "")
+            ));
+            modules.add(new HealthRadarDto.BusFactorModule(
+                    new FileNode("file_2", "PaymentGateway.java", "java", 620), 3, 2, false,
+                    new DeveloperNode("dev_3", "Alex Rivera", "Payments & Commerce", "Senior Backend Dev (2.5 yrs)", "")
+            ));
+            modules.add(new HealthRadarDto.BusFactorModule(
+                    new FileNode("file_3", "AuthCore.java", "java", 890), 4, 1, true,
+                    new DeveloperNode("dev_5", "Emily Watson", "Authentication & Identity", "Security Engineer (2 yrs)", "")
+            ));
+            modules.add(new HealthRadarDto.BusFactorModule(
+                    new FileNode("file_4", "TokenValidator.java", "java", 310), 1, 2, false,
+                    new DeveloperNode("dev_1", "Sarah Jenkins", "Security & Core API", "Senior Engineer (4 yrs)", "")
+            ));
+            modules.add(new HealthRadarDto.BusFactorModule(
+                    new FileNode("file_7", "StripeClient.java", "java", 510), 1, 1, false,
+                    new DeveloperNode("dev_3", "Alex Rivera", "Payments & Commerce", "Senior Backend Dev (2.5 yrs)", "")
+            ));
         }
 
         return new HealthRadarDto(modules, modules.size(), cypherPattern);

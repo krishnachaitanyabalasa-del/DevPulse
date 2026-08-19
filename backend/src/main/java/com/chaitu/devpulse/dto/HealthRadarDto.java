@@ -52,6 +52,10 @@ public class HealthRadarDto {
             return isBusFactorRisk;
         }
 
+        public boolean getBusFactorRisk() {
+            return isBusFactorRisk;
+        }
+
         public void setBusFactorRisk(boolean busFactorRisk) {
             isBusFactorRisk = busFactorRisk;
         }

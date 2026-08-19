@@ -7,7 +7,7 @@ export default function ExpertFinder({ query, setQuery, onSearch, result }) {
   return (
     <div className="card">
       <div className="card-header">
-        <h2 className="card-title">🔍 Expert Finder (3-Hop Graph Traversal)</h2>
+        <h2 className="card-title">Expert Finder (3-Hop Graph Traversal)</h2>
       </div>
 
       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>

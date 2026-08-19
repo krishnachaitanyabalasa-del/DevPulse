@@ -19,7 +19,7 @@ export default function Overview({
 }) {
   const topExpert = expertResult?.experts?.[0];
   const reviewers = reviewerResult?.recommendedReviewers || [];
-  const modules = radarResult?.modules || [];
+  const modules = radarResult?.criticalModules || radarResult?.modules || [];
 
   return (
     <div>
@@ -171,7 +171,7 @@ export default function Overview({
           </div>
 
           <div style={{ background: '#f1f5f9', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', display: 'inline-block', marginBottom: '12px' }}>
-            📄 {expertResult?.targetFile?.path || expertQuery}
+            {expertResult?.targetFile?.path || expertQuery}
           </div>
 
           {topExpert ? (
@@ -254,15 +254,19 @@ export default function Overview({
             <tbody>
               {modules.length > 0 ? (
                 modules.map((mod, idx) => {
-                  const riskLevel = mod.busFactorRisk ? 'High' : (mod.dependencyInDegree > 1 ? 'Medium' : 'Low');
-                  const badgeClass = mod.busFactorRisk ? 'badge-high' : (mod.dependencyInDegree > 1 ? 'badge-medium' : 'badge-low');
-                  const centrality = (0.45 + (mod.dependencyInDegree || 1) * 0.15).toFixed(2);
-                  const density = (1.0 / ((mod.reviewerCount || 1) + 1)).toFixed(2);
-                  const score = mod.busFactorRisk ? '0.91' : (centrality * density).toFixed(2);
+                  const isRisk = mod.busFactorRisk ?? mod.isBusFactorRisk ?? false;
+                  const inDegree = mod.dependencyInDegree || 0;
+                  const revCount = mod.uniqueReviewersCount ?? mod.reviewerCount ?? 0;
+                  const filePath = mod.file?.path || mod.path || mod.filePath || 'Unknown';
+                  const riskLevel = isRisk ? 'High' : (inDegree > 1 ? 'Medium' : 'Low');
+                  const badgeClass = isRisk ? 'badge-high' : (inDegree > 1 ? 'badge-medium' : 'badge-low');
+                  const centrality = (0.45 + (inDegree || 1) * 0.15).toFixed(2);
+                  const density = (1.0 / (revCount + 1)).toFixed(2);
+                  const score = isRisk ? '0.91' : (centrality * density).toFixed(2);
 
                   return (
                     <tr key={idx}>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>src/.../{mod.file.path}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>src/.../{filePath}</td>
                       <td>{centrality}</td>
                       <td>{density}</td>
                       <td style={{ fontWeight: 700 }}>{score}</td>

@@ -28,7 +28,7 @@ export default function Header({
         if (!res.ok) res = await fetch('http://localhost:8080/api/seed');
         const data = await res.json();
         if (data.seeded) {
-          alert('🌱 Database successfully seeded! Nodes created: ' + data.nodesCreated);
+          alert('Database successfully seeded! Nodes created: ' + data.nodesCreated);
           if (onRefresh) onRefresh();
         } else {
           alert('Seeding notice: ' + (data.error || data.message));

@@ -22,7 +22,6 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     { id: 'Repositories', label: 'Repositories', icon: FolderGit2 },
     { id: 'Developers', label: 'Developers', icon: Users },
     { id: 'Tags', label: 'Tags', icon: Tag },
-    { id: 'Reports', label: 'Reports', icon: FileText },
     { id: 'Settings', label: 'Settings', icon: Settings },
   ];
 

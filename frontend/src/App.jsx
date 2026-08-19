@@ -183,7 +183,7 @@ export default function App() {
         />
 
         <section className="welcome-section">
-          <h1 className="welcome-title">Welcome back, John! 👋</h1>
+          <h1 className="welcome-title">Welcome back, John!</h1>
           <p className="welcome-subtitle">Here's what's happening in your engineering graph.</p>
         </section>
 

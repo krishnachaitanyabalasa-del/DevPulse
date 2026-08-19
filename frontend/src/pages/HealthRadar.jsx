@@ -1,12 +1,12 @@
 import React from 'react';
 
 export default function HealthRadar({ result }) {
-  const modules = result?.modules || [];
+  const modules = result?.criticalModules || result?.modules || [];
 
   return (
     <div className="card">
       <div className="card-header">
-        <h2 className="card-title">🛡️ Bus Factor Health Radar</h2>
+        <h2 className="card-title">Bus Factor Health Radar</h2>
       </div>
 
       <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
@@ -26,15 +26,19 @@ export default function HealthRadar({ result }) {
         <tbody>
           {modules.length > 0 ? (
             modules.map((mod, idx) => {
-              const riskLevel = mod.busFactorRisk ? 'High' : (mod.dependencyInDegree > 1 ? 'Medium' : 'Low');
-              const badgeClass = mod.busFactorRisk ? 'badge-high' : (mod.dependencyInDegree > 1 ? 'badge-medium' : 'badge-low');
-              const centrality = (0.45 + (mod.dependencyInDegree || 1) * 0.15).toFixed(2);
-              const density = (1.0 / ((mod.reviewerCount || 1) + 1)).toFixed(2);
-              const score = mod.busFactorRisk ? '0.91' : (centrality * density).toFixed(2);
+              const isRisk = mod.busFactorRisk ?? mod.isBusFactorRisk ?? false;
+              const inDegree = mod.dependencyInDegree || 0;
+              const revCount = mod.uniqueReviewersCount ?? mod.reviewerCount ?? 0;
+              const filePath = mod.file?.path || mod.path || mod.filePath || 'Unknown';
+              const riskLevel = isRisk ? 'High' : (inDegree > 1 ? 'Medium' : 'Low');
+              const badgeClass = isRisk ? 'badge-high' : (inDegree > 1 ? 'badge-medium' : 'badge-low');
+              const centrality = (0.45 + (inDegree || 1) * 0.15).toFixed(2);
+              const density = (1.0 / (revCount + 1)).toFixed(2);
+              const score = isRisk ? '0.91' : (centrality * density).toFixed(2);
 
               return (
                 <tr key={idx}>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>src/.../{mod.file.path}</td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>src/.../{filePath}</td>
                   <td>{centrality}</td>
                   <td>{density}</td>
                   <td style={{ fontWeight: 700 }}>{score}</td>
