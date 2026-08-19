@@ -1,145 +1,622 @@
-# DevPulse — Developer Knowledge & Code Review Graph Engine
+# DevPulse - Engineering Knowledge & Code Review Intelligence
 
-**DevPulse** is a production-grade Graph Database application built for engineering teams to eliminate tribal knowledge black holes, intelligently route code reviews, and detect single-point-of-failure "Bus Factor" risks in codebases.
+> Find the right engineer. Route the right reviewer. Detect knowledge risk.
 
-Built using **Java 21**, **Spring Boot 3**, **Spring Data Neo4j**, and **React 18 + Vite**, backed by **CognoDB Cloud** (Neo4j driver compatible) as the graph database layer.
+DevPulse is a graph-powered engineering intelligence application for software teams. It models relationships between developers, repositories, pull requests, files, tags, code dependencies, and review history to answer questions that are difficult to express with traditional relational data models.
 
----
-
-## 🎯 1. The Real-World Problem (The "Why")
-
-In software engineering organizations with 20+ developers, three silent productivity killers exist:
-
-1. **The "Tribal Knowledge" Black Hole**: When a developer joins, they ask *"Who knows how PaymentGateway works?"* The answer is usually a guessing game or an ignored Slack message.
-2. **The Blind Code Review**: Pull Requests (PRs) are assigned randomly. A frontend developer gets assigned to review a complex database migration, leading to slow turnarounds and missed bugs.
-3. **The Hidden Bus Factor**: Teams don't realize that only *one* person has reviewed/authored the core authentication module in the last 2 years. If they leave, the team is paralyzed.
-
-Existing ticket trackers (Jira/Linear) and version control hosts (GitHub) track *commits* and *tickets*, but neither tracks the **weighted relationships between developers, code files, pull requests, and sub-dependencies**.
+The application is backed by CognoDB Cloud, using openCypher and the Neo4j-compatible Java ecosystem through a Spring Boot backend.
 
 ---
 
-## ⚡ 2. The Solution (DevPulse)
+## Demo & Repository Information
 
-DevPulse ingests GitHub metadata into a graph network map that answers questions traditional SQL databases find awkward:
-
-> *"Not just who wrote this file, but who understands the ripple effect of changing it?"*
-
-### 3 Core Tools in DevPulse:
-- **The "Expert Finder"**: Type a file path (e.g. `OrderService.java`) or tech tag (e.g., `#Security`, `#Payments`). DevPulse maps a **3-hop graph path** from that file to developers who reviewed PRs affecting it and their team proximity.
-- **The "Smart Reviewer Router"**: Evaluates PRs before merge and recommends the top 3 best-fit reviewers ranked by contextual relevance (review history + file dependency proximity).
-- **The "Health Radar"**: Graph centrality dashboard highlighting critical files with high dependency in-degree but low developer density (identifying Bus Factor risks).
+- Hosted Backend API: https://devpulse-qpvz.onrender.com
+- API Health Endpoint: https://devpulse-qpvz.onrender.com/api/health
+- GitHub Repository: https://github.com/krishnachaitanyabalasa-del/DevPulse
+- Assignment Submission Target: hr@wexa.ai
 
 ---
 
-## 🧠 3. Why a Graph Database? (Graph vs. Relational SQL)
+## Why DevPulse?
 
-If we built DevPulse in PostgreSQL or MySQL, we would need 3 massive join tables (`PR_Reviewers`, `PR_Files`, `File_Dependencies`) and complex **Recursive Common Table Expressions (CTEs)**.
+Engineering teams accumulate knowledge in source code, pull requests, reviews, and developer collaboration.
 
-### The Relational SQL Nightmare
-To find *"developers who reviewed PRs touching files that depend on PaymentGateway.java"* in SQL:
+Traditional project-management and source-control tools can answer questions such as:
+- What tickets are open?
+- Which pull requests exist?
+- Who committed recently?
 
-```sql
--- Relational SQL: Clunky 6-table join with recursive CTE
-WITH RECURSIVE FileDependencies AS (
-    SELECT file_id, depends_on_file_id FROM file_deps WHERE file_id = 'file_2'
-    UNION ALL
-    SELECT fd.file_id, d.depends_on_file_id 
-    FROM file_deps d JOIN FileDependencies fd ON d.file_id = fd.depends_on_file_id
-)
-SELECT dev.name, COUNT(pr.id) AS review_count, AVG(pr_rev.score) AS avg_score
-FROM FileDependencies fd
-JOIN pr_files prf ON prf.file_id = fd.depends_on_file_id
-JOIN pull_requests pr ON pr.id = prf.pr_id
-JOIN pr_reviewers pr_rev ON pr_rev.pr_id = pr.id
-JOIN developers dev ON dev.id = pr_rev.developer_id
-GROUP BY dev.id, dev.name
-ORDER BY review_count DESC LIMIT 3;
+But they do not naturally answer relationship-heavy questions such as:
+- Who understands this file?
+- Who has reviewed code related to this module?
+- Who is the best reviewer for this change?
+- Which files are depended on by many other modules?
+- Which critical modules have very few developers with review history?
+
+DevPulse represents these connections directly as a graph.
+
+### Core Features
+
+| Feature | Purpose |
+| :--- | :--- |
+| Expert Finder | Finds developers connected to a file through pull requests and review history |
+| Smart Reviewer Router | Ranks developers by their relevance and historical review quality to a file or PR |
+| Health Radar | Detects files with high dependency centrality and low developer coverage |
+| Graph Explorer | Provides a visual way to inspect connected engineering entities and paths |
+
+---
+
+# Why a Graph Database?
+
+DevPulse is fundamentally a relationship-oriented application.
+
+For example, finding an expert for `OrderService.java` requires traversing:
+
+```
+Developer
+    ↓ REVIEWED
+Pull Request
+    ↓ CHANGES
+File
 ```
 
-### The Cypher Graph Advantage
-In **CognoDB (Cypher)**, relationships are stored as direct pointers (index-free adjacency). Traversing `(Developer)-[:REVIEWED]->(PR)-[:CHANGES]->(File)-[:DEPENDS_ON]->(File)` takes **milliseconds** regardless of dataset size:
+Understanding the impact of changing a file can require traversing:
+
+```
+File A
+   ↓ DEPENDS_ON
+File B
+   ↓ DEPENDS_ON
+File C
+```
+
+In a relational database, these questions require several join tables and potentially recursive queries. As relationship depth grows, the queries become increasingly cumbersome and slow.
+
+With CognoDB, the relationships are represented directly in the graph and queried using Cypher patterns.
+
+Example:
 
 ```cypher
-// Parameterized Cypher: Fast, expressive, and scalable graph pattern
-MATCH (f:File {path: $filePath})<-[:CHANGES]-(pr:PullRequest)<-[r:REVIEWED]-(dev:Developer)
-RETURN dev.name, count(pr) AS reviewCount, avg(r.score) AS avgScore
-ORDER BY reviewCount DESC, avgScore DESC LIMIT 3;
+MATCH (f:File)
+WHERE toLower(f.path) CONTAINS toLower($file)
+MATCH (pr:PullRequest)-[:CHANGES]->(f)
+MATCH (dev:Developer)-[r:REVIEWED]->(pr)
+RETURN dev, count(pr) AS reviewCount, avg(r.score) AS averageScore
+ORDER BY reviewCount DESC
+```
+
+This directly expresses:
+
+```
+File ← CHANGES ← PullRequest ← REVIEWED ← Developer
+```
+
+That makes graph traversal a natural fit for DevPulse.
+
+---
+
+# Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│                React Frontend               │
+│                                             │
+│ Overview  Expert Finder  Reviewer Router    │
+│ Health Radar  Repositories  Developers      │
+└──────────────────────┬──────────────────────┘
+                       │ REST / JSON
+                       ▼
+┌─────────────────────────────────────────────┐
+│          Spring Boot 3.2.5 Backend          │
+│                 Java 21                     │
+│                                             │
+│ Controllers → Services → Neo4jClient        │
+└──────────────────────┬──────────────────────┘
+                       │ Bolt / openCypher
+                       ▼
+┌─────────────────────────────────────────────┐
+│              CognoDB Cloud                  │
+│                                             │
+│ Developer • Repository • PR • File • Tag   │
+│        + typed relationships                │
+└─────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 4. Conceptual Data Model
+# Technology Stack
 
-```mermaid
-graph TD
-    Dev[Developer<br/><i>name, team, tenure</i>]
-    Repo[Repository<br/><i>name, language</i>]
-    PR[PullRequest<br/><i>prNumber, title, status</i>]
-    File[File<br/><i>path, extension, linesOfCode</i>]
-    Tag[Tag<br/><i>name, category</i>]
+### Backend
+- Java 21
+- Spring Boot 3.2.5
+- Spring Data Neo4j (`Neo4jClient`)
+- REST APIs
+- Parameterized Cypher queries
 
-    Dev -->|CREATED| PR
-    Dev -->|REVIEWED {score}| PR
-    PR -->|CHANGES {additions}| File
-    File -->|DEPENDS_ON {type}| File
-    PR -->|TAGGED_WITH| Tag
-    Dev -->|FOLLOWS| Dev
+### Database
+- CognoDB Cloud
+- openCypher
+- Bolt 5.0–5.4 protocol
+
+### Frontend
+- React 18
+- Vite
+- Modular Page CSS / Responsive UI
+
+### Deployment
+- Backend: Render (Docker Container Service)
+- Database: CognoDB Cloud
+
+---
+
+# Graph Data Model
+
+## Nodes
+
+### Developer
+```text
+Developer
+├── id
+├── name
+├── team
+├── tenure
+└── avatarUrl
+```
+
+### Repository
+```text
+Repository
+├── id
+├── name
+└── language
+```
+
+### PullRequest
+```text
+PullRequest
+├── id
+├── prNumber
+├── title
+├── status
+└── createdAt
+```
+
+### File
+```text
+File
+├── id
+├── path
+├── extension
+└── linesOfCode
+```
+
+### Tag
+```text
+Tag
+├── id
+└── name
 ```
 
 ---
 
-## 🚀 5. Setup & Execution Guide
+## Relationships
 
-### Prerequisites
-- Java 21 LTS & Maven
-- Node.js (v18+) & npm
-- A free **CognoDB Cloud** database instance
+```text
+Developer ──CREATED───────► PullRequest
+Developer ──REVIEWED──────► PullRequest
+Developer ──MAINTAINS─────► File
 
-### 1. Configure Environment Variables
+PullRequest ──CHANGES─────► File
+PullRequest ──TAGGED_WITH─► Tag
+
+File ──DEPENDS_ON─────────► File
+File ──HAS_TAG────────────► Tag
+
+Developer ──CONTRIBUTES_TO► Repository
+Repository ──CONTAINS─────► File
+```
+
+### Relationship Properties
+
+`REVIEWED`:
+```text
+score
+thoroughness
+```
+
+`CHANGES`:
+```text
+additions
+```
+
+`DEPENDS_ON`:
+```text
+type
+```
+
+These properties allow DevPulse to use more than simple connectivity when calculating relevance and risk.
+
+---
+
+# Graph Model Diagram
+
+```text
+                         ┌─────────────┐
+                         │    Tag      │
+                         └──────▲──────┘
+                                │ HAS_TAG / TAGGED_WITH
+                                │
+┌─────────────┐   CREATED   ┌───┴─────────┐
+│  Developer  ├────────────►│ PullRequest │
+└──────┬──────┘             └─────┬───────┘
+       │                          │
+       │ REVIEWED                 │ CHANGES
+       │                          │
+       │                          ▼
+       │                    ┌───────────┐
+       │                    │   File    │
+       │                    └─────┬─────┘
+       │                          │
+       │ MAINTAINS                │ DEPENDS_ON
+       ▼                          ▼
+┌─────────────┐             ┌───────────┐
+│ Repository  │             │   File    │
+└──────┬──────┘             └───────────┘
+       │ CONTAINS
+       ▼
+    ┌──────┐
+    │ File │
+    └──────┘
+```
+
+---
+
+# Seed Data
+
+The repository contains a Cypher seed script:
+
+```text
+backend/src/main/resources/seed.cypher
+```
+
+The current seed creates realistic engineering data including:
+- 10 developers
+- 5 repositories
+- 12 files
+- 6 tags
+- 8 pull requests
+- File dependency relationships
+- Pull-request file modifications
+- Pull-request tags
+- Developer authorship & maintainership
+- Developer review history
+
+The seed includes weighted review relationships such as:
+
+```cypher
+(d:Developer)-[:REVIEWED {
+    score: 95,
+    thoroughness: "HIGH"
+}]->(pr:PullRequest)
+```
+
+and dependency metadata such as:
+
+```cypher
+(a:File)-[:DEPENDS_ON {
+    type: "IMPORT"
+}]->(b:File)
+```
+
+This provides enough connected data to demonstrate multi-hop graph queries and risk analysis.
+
+---
+
+# Main Application Flows
+
+## 1. Expert Finder
+
+### User Problem
+> "I have a bug in `OrderService.java`. Who understands this code?"
+
+The user searches for a file.
+
+DevPulse traverses:
+```text
+File ← CHANGES ← PullRequest ← REVIEWED ← Developer
+```
+
+The result contains Developer, Team, Tenure, Review count, and relationship path explanation.
+
+---
+
+## 2. Smart Reviewer Router
+
+### User Problem
+> "Who should review this change?"
+
+The Reviewer Router evaluates developers using their relationship to the requested file and its surrounding dependency hierarchy.
+
+Example:
+```text
+1. Sarah Jenkins     95% Reviewer Fit
+2. Alex Rivera       78% Reviewer Fit
+3. Carlos Mendez     62% Reviewer Fit
+```
+
+The score is a relevance score derived from graph evidence such as maintainership, review history, and dependency proximity.
+
+---
+
+## 3. Health Radar
+
+### User Problem
+> "Which parts of our codebase are dangerous because too few people understand them?"
+
+Health Radar analyzes the graph around files. A module becomes higher risk when many other files depend on it while few developers have reviewed changes involving it.
+
+Example:
+```text
+PaymentGateway.java
+
+Dependency in-degree: 3
+Developer density:    0.33
+Risk level:           HIGH (Bus Factor Risk)
+```
+
+---
+
+# Expanded Cypher Query Suite
+
+DevPulse leverages openCypher queries executing over Bolt 5.0. Below are the key graph algorithms and traversals powering the application:
+
+### Query 1: Expert Finder (Multi-Hop Traversal)
+
+Finds engineers connected to a target file through historical Pull Requests and Code Reviews:
+
+```cypher
+MATCH (f:File)
+WHERE toLower(f.path) CONTAINS toLower($q) OR f.id = $q
+MATCH (pr:PullRequest)-[:CHANGES]->(f)
+MATCH (dev:Developer)-[r:REVIEWED]->(pr)
+RETURN
+    f.id AS fileId,
+    f.path AS filePath,
+    f.extension AS extension,
+    f.linesOfCode AS linesOfCode,
+    dev.id AS developerId,
+    dev.name AS developerName,
+    dev.team AS team,
+    dev.tenure AS tenure,
+    count(pr) AS reviewCount,
+    avg(r.score) AS averageReviewScore
+ORDER BY reviewCount DESC, averageReviewScore DESC
+LIMIT 5
+```
+
+---
+
+### Query 2: Smart Reviewer Router Recommendation
+
+Ranks candidate reviewers using weighted scores from file maintainership and historical PR reviews:
+
+```cypher
+MATCH (f:File)
+WHERE f.path = $filePath OR f.id = $filePath
+MATCH (d:Developer)
+OPTIONAL MATCH (pr:PullRequest)-[:CHANGES]->(f)
+OPTIONAL MATCH (d)-[r:REVIEWED]->(pr)
+OPTIONAL MATCH (d)-[m:MAINTAINS]->(f)
+WITH d, count(r) AS reviewCount, count(m) AS isMaintainer
+WHERE reviewCount > 0 OR isMaintainer > 0
+RETURN d.id AS id, 
+       d.name AS name, 
+       d.team AS team, 
+       d.tenure AS tenure, 
+       d.avatarUrl AS avatarUrl,
+       (reviewCount * 25.0 + isMaintainer * 50.0) AS relevanceScore
+ORDER BY relevanceScore DESC
+LIMIT 5
+```
+
+---
+
+### Query 3: Health Radar (Bus Factor & Dependency Centrality)
+
+Calculates module risk by analyzing incoming dependency in-degree against unique reviewer density:
+
+```cypher
+MATCH (target:File)
+OPTIONAL MATCH (dep:File)-[:DEPENDS_ON]->(target)
+OPTIONAL MATCH (pr:PullRequest)-[:CHANGES]->(target)
+OPTIONAL MATCH (rev:Developer)-[:REVIEWED]->(pr)
+WITH target, 
+     count(DISTINCT dep) AS inDegree, 
+     count(DISTINCT rev) AS revCount, 
+     collect(DISTINCT rev) AS reviewers
+RETURN target.id AS f_id, 
+       target.path AS f_path, 
+       target.extension AS f_ext, 
+       target.linesOfCode AS f_loc, 
+       inDegree, 
+       revCount, 
+       reviewers
+ORDER BY inDegree DESC
+```
+
+---
+
+### Query 4: Transitive Dependency Chain & Risk Propagation (2 to 4 Hops)
+
+Discovers upstream files affected when a core module is refactored across multi-hop dependency chains:
+
+```cypher
+MATCH path = (source:File {path: $filePath})<-[:DEPENDS_ON*1..4]-(dependent:File)
+RETURN dependent.path AS dependentFile,
+       dependent.linesOfCode AS loc,
+       length(path) AS dependencyDepth,
+       [node IN nodes(path) | node.path] AS propagationChain
+ORDER BY dependencyDepth ASC
+```
+
+---
+
+### Query 5: Cross-Team Knowledge Transfer & Collaboration Traversal
+
+Identifies cross-team developers who review PRs outside their primary repository ownership:
+
+```cypher
+MATCH (d:Developer)-[:MAINTAINS]->(homeRepo:Repository)
+MATCH (d)-[:REVIEWED]->(pr:PullRequest)-[:CHANGES]->(f:File)
+MATCH (otherRepo:Repository)-[:CONTAINS]->(f)
+WHERE homeRepo <> otherRepo
+RETURN d.name AS developerName,
+       d.team AS homeTeam,
+       homeRepo.name AS homeRepository,
+       otherRepo.name AS reviewedExternalRepository,
+       count(pr) AS externalReviewsCount
+ORDER BY externalReviewsCount DESC
+```
+
+---
+
+### Query 6: High Complexity & Low-Coverage Hotspot Detection
+
+Detects large files (>300 lines of code) with high dependency connections that lack sufficient active maintainers:
+
+```cypher
+MATCH (f:File)
+WHERE f.linesOfCode > 300
+OPTIONAL MATCH (dep:File)-[:DEPENDS_ON]->(f)
+OPTIONAL MATCH (m:Developer)-[:MAINTAINS]->(f)
+WITH f, count(dep) AS inwardDependencies, count(m) AS maintainerCount
+WHERE maintainerCount <= 1 AND inwardDependencies >= 1
+RETURN f.path AS vulnerableFile,
+       f.linesOfCode AS loc,
+       inwardDependencies,
+       maintainerCount,
+       "High Knowledge Risk" AS riskCategory
+ORDER BY inwardDependencies DESC
+```
+
+---
+
+# REST API Reference
+
+| Endpoint | Method | Purpose |
+| :--- | :--- | :--- |
+| `/api/health` | GET | Returns database connectivity status, node count, and relationship count |
+| `/api/seed` | GET/POST | Triggers transactional graph database seeding |
+| `/api/experts` | GET/POST | Traverses graph for 3-hop file expert search (`?query=OrderService.java`) |
+| `/api/experts/developers` | GET | Returns list of all Developer nodes |
+| `/api/reviewers/recommend` | GET/POST | Ranks recommended PR reviewers for a specified file |
+| `/api/radar/bus-factor` | GET | Returns Bus Factor risk assessment across all files |
+| `/api/radar/files` | GET | Returns list of all File nodes |
+| `/api/repositories` | GET | Returns list of all Repository nodes |
+
+---
+
+# Parameterized Queries in Java
+
+All user-provided values are safely passed to Cypher as parameters using `Neo4jClient` to prevent Cypher injection:
+
+```java
+neo4jClient.query("""
+    MATCH (f:File)
+    WHERE toLower(f.path) CONTAINS toLower($q)
+    RETURN f
+""")
+.bind(query)
+.to("q");
+```
+
+---
+
+# Project Structure
+
+```text
+devpulse/
+├── backend/
+│   ├── src/main/java/com/chaitu/devpulse/
+│   │   ├── controller/DevPulseController.java     # REST API Controller
+│   │   ├── dto/                                  # Data Transfer Objects
+│   │   ├── model/                                # Graph Node Models
+│   │   └── service/                              # Cypher Graph Services
+│   │       ├── DeveloperService.java
+│   │       ├── ExpertFinderService.java
+│   │       ├── FileService.java
+│   │       ├── GraphHealthService.java
+│   │       ├── PullRequestService.java
+│   │       ├── RadarService.java
+│   │       ├── RepositoryService.java
+│   │       ├── ReviewerRouterService.java
+│   │       └── SeedService.java                  # Transactional Seeding
+│   ├── src/main/resources/
+│   │   ├── application.properties               # Neo4j Driver Connection Config
+│   │   └── seed.cypher                           # openCypher Seed Script
+│   ├── Dockerfile                                # Multi-Stage Build Spec
+│   └── pom.xml                                   # Spring Boot 3.2.5 (Java 21)
+├── frontend/
+│   ├── src/
+│   │   ├── components/                           # Header, Sidebar, MetricCard
+│   │   ├── pages/                                # Overview, Experts, Reviewers, Radar
+│   │   ├── styles/                               # Dedicated Page CSS Modules
+│   │   └── App.jsx                               # Router & Global Layout
+│   └── package.json                              # Vite + React Dependencies
+├── docker-compose.yml                            # Local Stack Spec
+└── render.yaml                                   # Render Cloud Infrastructure Spec
+```
+
+---
+
+# Local Setup
+
+## 1. Clone Repository
 ```bash
-export NEO4J_URI="bolt+s://<instance-id>.databases.cognodb.cloud"
-export NEO4J_USERNAME="cognodb"
-export NEO4J_PASSWORD="<your-generated-password>"
+git clone https://github.com/krishnachaitanyabalasa-del/DevPulse.git
+cd DevPulse
 ```
 
-### 2. Seed CognoDB Database
-Copy and execute [`seed/seed.cypher`](file:///D:/devpulse/seed/seed.cypher) in the CognoDB Web Console or Cypher Shell.
+## 2. Create CognoDB Cloud Instance
+1. Go to https://console.cognodb.com/signup and create a free account.
+2. Provision a free `c0` instance in your preferred region.
+3. Save the generated Bolt Connection URI (`bolt+s://<instance-id>.databases.cognodb.com:7687`), username (`cognodb`), and password.
 
-### 3. Run Backend (Spring Boot)
+## 3. Configure Environment Variables
+```bash
+export NEO4J_URI="bolt+s://<your-instance-id>.databases.cognodb.com:7687"
+export NEO4J_USERNAME="cognodb"
+export NEO4J_PASSWORD="<your-password>"
+```
+
+## 4. Run Backend
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
-The REST API will start on `http://localhost:8080`.
 
-### 4. Run Frontend (React + Vite)
+## 5. Run Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open `http://localhost:5173` to interact with the DevPulse Dashboard.
 
 ---
 
-## 📁 Repository Structure
+# Security & Resilience
 
-```
-DevPulse/
-├── backend/                  # Spring Boot 3 Java 21 Backend
-│   ├── src/main/java/com/chaitu/devpulse/
-│   │   ├── config/           # CORS Config
-│   │   ├── controller/       # REST Endpoints (/api/experts, /api/reviewers, /api/radar, /api/health)
-│   │   ├── dto/              # API DTOs (ExpertFinderDto, ReviewerRouterDto, HealthRadarDto)
-│   │   ├── model/            # SDN Node Entities (@Node("Developer"), etc.)
-│   │   └── service/          # DevPulseGraphService (Parameterized Cypher execution)
-│   └── pom.xml               # Maven configuration
-├── frontend/                 # React 18 + Vite Web Application
-│   ├── src/
-│   │   ├── App.jsx           # Complete DevPulse Engineering Intelligence Dashboard UI
-│   │   └── index.css         # Styling system
-│   └── vite.config.js        # API proxy config
-├── seed/                     # Seed Scripts
-│   └── seed.cypher           # Cypher dataset (Developers, PRs, Files, Dependencies)
-└── README.md                 # Complete Assignment Documentation
-```
+- Database secrets are read strictly from environment variables.
+- Queries use parameterized binding (`bind().to()`).
+- Database exceptions are caught gracefully by `GraphHealthService` to prevent application downtime.
+
+---
+
+
+
+# Author
+
+**Krishna Chaitanya Balasa**  
+Computer Science Engineering  
+VIT-AP University  
+Submission Contact: `hr@wexa.ai`
