@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(originPatterns = "*", allowCredentials = "true")
+@CrossOrigin(origins = {"https://devpulse-mu-ten.vercel.app", "http://localhost:5173", "http://localhost:3000"}, originPatterns = "*", allowCredentials = "true")
 public class DevPulseController {
 
     private final DevPulseGraphService graphService;
