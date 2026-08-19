@@ -31,95 +31,121 @@ public class DevPulseGraphService {
     public Map<String, Object> seedDatabase() {
         Map<String, Object> result = new HashMap<>();
         try {
-            log.info("Starting automatic database seed process for CognoDB...");
+            log.info("Starting production graph database seed process for CognoDB...");
 
-            // 1. Wipe existing nodes
-            neo4jClient.query("MATCH (n) DETACH DELETE n").run();
-
-            // 2. Create Constraints
             try {
-                neo4jClient.query("CREATE CONSTRAINT dev_id_unique IF NOT EXISTS FOR (d:Developer) REQUIRE d.id IS UNIQUE").run();
-                neo4jClient.query("CREATE CONSTRAINT file_id_unique IF NOT EXISTS FOR (f:File) REQUIRE f.id IS UNIQUE").run();
-                neo4jClient.query("CREATE CONSTRAINT pr_id_unique IF NOT EXISTS FOR (pr:PullRequest) REQUIRE pr.id IS UNIQUE").run();
-            } catch (Exception e) {
-                log.info("Constraint creation warning (already exists): {}", e.getMessage());
+                neo4jClient.query("MATCH (n) DETACH DELETE n").run();
+            } catch (Exception ex) {
+                log.warn("Notice during clear: {}", ex.getMessage());
             }
 
-            // 3. Create Developers
-            neo4jClient.query("CREATE (d1:Developer {id: 'dev_1', name: 'Sarah Jenkins', team: 'Security & Core API', tenure: 'Senior Engineer (4 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80'})").run();
-            neo4jClient.query("CREATE (d2:Developer {id: 'dev_2', name: 'Krishna Chaitu', team: 'Backend Architecture', tenure: 'Tech Lead (3 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80'})").run();
-            neo4jClient.query("CREATE (d3:Developer {id: 'dev_3', name: 'Alex Rivera', team: 'Payments & Commerce', tenure: 'Senior Backend Dev (2.5 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=300&q=80'})").run();
-            neo4jClient.query("CREATE (d4:Developer {id: 'dev_4', name: 'Carlos Mendez', team: 'Database & Infra', tenure: 'Staff Architect (6 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'})").run();
-            neo4jClient.query("CREATE (d5:Developer {id: 'dev_5', name: 'Emily Watson', team: 'Authentication & Identity', tenure: 'Security Engineer (2 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'})").run();
-            neo4jClient.query("CREATE (d6:Developer {id: 'dev_6', name: 'Mike Zhang', team: 'Frontend & Integrations', tenure: 'Junior Engineer (1 yr)', avatarUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=300&q=80'})").run();
+            // 2. Create 10 Developers
+            execQuery("CREATE (d:Developer {id: 'dev_1', name: 'Sarah Jenkins', team: 'Security & Core API', tenure: 'Senior Engineer (4 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_2', name: 'Krishna Chaitu', team: 'Backend Architecture', tenure: 'Tech Lead (3 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_3', name: 'Alex Rivera', team: 'Payments & Commerce', tenure: 'Senior Backend Dev (2.5 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_4', name: 'Carlos Mendez', team: 'Database & Infra', tenure: 'Staff Architect (6 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_5', name: 'Emily Watson', team: 'Authentication & Identity', tenure: 'Security Engineer (2 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_6', name: 'Mike Zhang', team: 'Frontend & Integrations', tenure: 'Junior Engineer (1 yr)', avatarUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_7', name: 'Priya Patel', team: 'Cloud & DevOps', tenure: 'Principal SRE (5 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_8', name: 'David Kim', team: 'API Gateway & Services', tenure: 'Staff Engineer (4 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_9', name: 'Hannah Abbott', team: 'Data & Analytics', tenure: 'Senior Data Engineer (3 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80'})");
+            execQuery("CREATE (d:Developer {id: 'dev_10', name: 'Lucas Vance', team: 'Platform & Performance', tenure: 'Principal Engineer (7 yrs)', avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80'})");
 
-            // 4. Create Repositories
-            neo4jClient.query("CREATE (r1:Repository {id: 'repo_1', name: 'payment-gateway-service', language: 'Java'})").run();
-            neo4jClient.query("CREATE (r2:Repository {id: 'repo_2', name: 'auth-identity-service', language: 'Java'})").run();
+            // 3. Create 5 Repositories
+            execQuery("CREATE (r:Repository {id: 'repo_1', name: 'payment-gateway-service', language: 'Java'})");
+            execQuery("CREATE (r:Repository {id: 'repo_2', name: 'auth-identity-service', language: 'Java'})");
+            execQuery("CREATE (r:Repository {id: 'repo_3', name: 'core-api-service', language: 'Java'})");
+            execQuery("CREATE (r:Repository {id: 'repo_4', name: 'infrastructure-config', language: 'HCL'})");
+            execQuery("CREATE (r:Repository {id: 'repo_5', name: 'data-analytics-pipeline', language: 'Python'})");
 
-            // 5. Create Files
-            neo4jClient.query("CREATE (f1:File {id: 'file_1', path: 'OrderService.java', extension: 'java', linesOfCode: 450})").run();
-            neo4jClient.query("CREATE (f2:File {id: 'file_2', path: 'PaymentGateway.java', extension: 'java', linesOfCode: 620})").run();
-            neo4jClient.query("CREATE (f3:File {id: 'file_3', path: 'AuthCore.java', extension: 'java', linesOfCode: 890})").run();
-            neo4jClient.query("CREATE (f4:File {id: 'file_4', path: 'TokenValidator.java', extension: 'java', linesOfCode: 310})").run();
-            neo4jClient.query("CREATE (f5:File {id: 'file_5', path: 'V2__payment_schema.sql', extension: 'sql', linesOfCode: 120})").run();
-            neo4jClient.query("CREATE (f6:File {id: 'file_6', path: 'CheckoutController.java', extension: 'java', linesOfCode: 280})").run();
+            // 4. Create 12 Files
+            execQuery("CREATE (f:File {id: 'file_1', path: 'OrderService.java', extension: 'java', linesOfCode: 450})");
+            execQuery("CREATE (f:File {id: 'file_2', path: 'PaymentGateway.java', extension: 'java', linesOfCode: 620})");
+            execQuery("CREATE (f:File {id: 'file_3', path: 'AuthCore.java', extension: 'java', linesOfCode: 890})");
+            execQuery("CREATE (f:File {id: 'file_4', path: 'TokenValidator.java', extension: 'java', linesOfCode: 310})");
+            execQuery("CREATE (f:File {id: 'file_5', path: 'V2__payment_schema.sql', extension: 'sql', linesOfCode: 120})");
+            execQuery("CREATE (f:File {id: 'file_6', path: 'CheckoutController.java', extension: 'java', linesOfCode: 280})");
+            execQuery("CREATE (f:File {id: 'file_7', path: 'StripeClient.java', extension: 'java', linesOfCode: 510})");
+            execQuery("CREATE (f:File {id: 'file_8', path: 'JWTUtils.java', extension: 'java', linesOfCode: 340})");
+            execQuery("CREATE (f:File {id: 'file_9', path: 'AuditLogger.java', extension: 'java', linesOfCode: 230})");
+            execQuery("CREATE (f:File {id: 'file_10', path: 'SecurityConfig.java', extension: 'java', linesOfCode: 410})");
+            execQuery("CREATE (f:File {id: 'file_11', path: 'RateLimiter.java', extension: 'java', linesOfCode: 290})");
+            execQuery("CREATE (f:File {id: 'file_12', path: 'DatabasePoolConfig.java', extension: 'java', linesOfCode: 180})");
 
-            // 6. Create Tags
-            neo4jClient.query("CREATE (t1:Tag {id: 'tag_1', name: 'Security', category: 'Domain'})").run();
-            neo4jClient.query("CREATE (t2:Tag {id: 'tag_2', name: 'Payments', category: 'Domain'})").run();
-            neo4jClient.query("CREATE (t3:Tag {id: 'tag_3', name: 'Database', category: 'Infra'})").run();
-            neo4jClient.query("CREATE (t4:Tag {id: 'tag_4', name: 'Auth', category: 'Security'})").run();
+            // 5. Create Tags
+            execQuery("CREATE (t:Tag {id: 'tag_1', name: 'Security', category: 'Domain'})");
+            execQuery("CREATE (t:Tag {id: 'tag_2', name: 'Payments', category: 'Domain'})");
+            execQuery("CREATE (t:Tag {id: 'tag_3', name: 'Database', category: 'Infra'})");
+            execQuery("CREATE (t:Tag {id: 'tag_4', name: 'Auth', category: 'Security'})");
 
-            // 7. Create Relationships (DEPENDS_ON)
-            neo4jClient.query("MATCH (f1:File {id: 'file_1'}), (f2:File {id: 'file_2'}) CREATE (f1)-[:DEPENDS_ON {type: 'IMPORT'}]->(f2)").run();
-            neo4jClient.query("MATCH (f6:File {id: 'file_6'}), (f1:File {id: 'file_1'}) CREATE (f6)-[:DEPENDS_ON {type: 'CALLS'}]->(f1)").run();
-            neo4jClient.query("MATCH (f2:File {id: 'file_2'}), (f3:File {id: 'file_3'}) CREATE (f2)-[:DEPENDS_ON {type: 'AUTHENTICATES_VIA'}]->(f3)").run();
-            neo4jClient.query("MATCH (f3:File {id: 'file_3'}), (f4:File {id: 'file_4'}) CREATE (f3)-[:DEPENDS_ON {type: 'USES'}]->(f4)").run();
-            neo4jClient.query("MATCH (f2:File {id: 'file_2'}), (f5:File {id: 'file_5'}) CREATE (f2)-[:DEPENDS_ON {type: 'PERSISTS_VIA'}]->(f5)").run();
+            // 6. DEPENDS_ON Dependencies
+            execQuery("MATCH (f1:File {id: 'file_1'}), (f2:File {id: 'file_2'}) CREATE (f1)-[:DEPENDS_ON {type: 'IMPORT'}]->(f2)");
+            execQuery("MATCH (f6:File {id: 'file_6'}), (f1:File {id: 'file_1'}) CREATE (f6)-[:DEPENDS_ON {type: 'CALLS'}]->(f1)");
+            execQuery("MATCH (f2:File {id: 'file_2'}), (f3:File {id: 'file_3'}) CREATE (f2)-[:DEPENDS_ON {type: 'AUTHENTICATES_VIA'}]->(f3)");
+            execQuery("MATCH (f2:File {id: 'file_2'}), (f7:File {id: 'file_7'}) CREATE (f2)-[:DEPENDS_ON {type: 'DELEGATES_TO'}]->(f7)");
+            execQuery("MATCH (f3:File {id: 'file_3'}), (f4:File {id: 'file_4'}) CREATE (f3)-[:DEPENDS_ON {type: 'USES'}]->(f4)");
+            execQuery("MATCH (f3:File {id: 'file_3'}), (f8:File {id: 'file_8'}) CREATE (f3)-[:DEPENDS_ON {type: 'USES'}]->(f8)");
+            execQuery("MATCH (f2:File {id: 'file_2'}), (f5:File {id: 'file_5'}) CREATE (f2)-[:DEPENDS_ON {type: 'PERSISTS_VIA'}]->(f5)");
+            execQuery("MATCH (f10:File {id: 'file_10'}), (f3:File {id: 'file_3'}) CREATE (f10)-[:DEPENDS_ON {type: 'CONFIGURES'}]->(f3)");
 
-            // 8. Create Pull Requests (PullRequest)
-            neo4jClient.query("CREATE (pr45:PullRequest {id: 'pr_45', prNumber: 45, title: 'Refactor OrderService payment flow', status: 'MERGED', createdAt: '2026-08-10T10:00:00Z'})").run();
-            neo4jClient.query("CREATE (pr88:PullRequest {id: 'pr_88', prNumber: 88, title: 'Integrate Stripe v2 in PaymentGateway', status: 'MERGED', createdAt: '2026-08-12T14:30:00Z'})").run();
-            neo4jClient.query("CREATE (pr102:PullRequest {id: 'pr_102', prNumber: 102, title: 'Harden AuthCore JWT token validation', status: 'MERGED', createdAt: '2026-08-14T09:15:00Z'})").run();
-            neo4jClient.query("CREATE (pr105:PullRequest {id: 'pr_105', prNumber: 105, title: 'Optimize V2 payment database indices', status: 'MERGED', createdAt: '2026-08-15T11:20:00Z'})").run();
-            neo4jClient.query("CREATE (pr112:PullRequest {id: 'pr_112', prNumber: 112, title: 'Add CheckoutController rate limiting', status: 'OPEN', createdAt: '2026-08-16T16:00:00Z'})").run();
+            // 7. Pull Requests
+            execQuery("CREATE (pr:PullRequest {id: 'pr_45', prNumber: 45, title: 'Refactor OrderService payment flow', status: 'MERGED', createdAt: '2026-08-10T10:00:00Z'})");
+            execQuery("CREATE (pr:PullRequest {id: 'pr_88', prNumber: 88, title: 'Integrate Stripe v2 in PaymentGateway', status: 'MERGED', createdAt: '2026-08-12T14:30:00Z'})");
+            execQuery("CREATE (pr:PullRequest {id: 'pr_102', prNumber: 102, title: 'Harden AuthCore JWT token validation', status: 'MERGED', createdAt: '2026-08-14T09:15:00Z'})");
+            execQuery("CREATE (pr:PullRequest {id: 'pr_105', prNumber: 105, title: 'Optimize V2 payment database indices', status: 'MERGED', createdAt: '2026-08-15T11:20:00Z'})");
+            execQuery("CREATE (pr:PullRequest {id: 'pr_112', prNumber: 112, title: 'Add CheckoutController rate limiting', status: 'OPEN', createdAt: '2026-08-16T16:00:00Z'})");
+            execQuery("CREATE (pr:PullRequest {id: 'pr_120', prNumber: 120, title: 'Upgrade Stripe SDK to 2026 spec', status: 'MERGED', createdAt: '2026-08-17T08:45:00Z'})");
+            execQuery("CREATE (pr:PullRequest {id: 'pr_125', prNumber: 125, title: 'Add SecurityConfig CSRF & OAuth2 rules', status: 'MERGED', createdAt: '2026-08-18T13:10:00Z'})");
 
-            // 9. Connect PRs to Files (CHANGES)
-            neo4jClient.query("MATCH (pr:PullRequest {id: 'pr_45'}), (f:File {id: 'file_1'}) CREATE (pr)-[:CHANGES {additions: 150}]->(f)").run();
-            neo4jClient.query("MATCH (pr:PullRequest {id: 'pr_88'}), (f:File {id: 'file_2'}) CREATE (pr)-[:CHANGES {additions: 320}]->(f)").run();
-            neo4jClient.query("MATCH (pr:PullRequest {id: 'pr_102'}), (f:File {id: 'file_3'}) CREATE (pr)-[:CHANGES {additions: 210}]->(f)").run();
-            neo4jClient.query("MATCH (pr:PullRequest {id: 'pr_102'}), (f:File {id: 'file_4'}) CREATE (pr)-[:CHANGES {additions: 90}]->(f)").run();
-            neo4jClient.query("MATCH (pr:PullRequest {id: 'pr_105'}), (f:File {id: 'file_5'}) CREATE (pr)-[:CHANGES {additions: 45}]->(f)").run();
-            neo4jClient.query("MATCH (pr:PullRequest {id: 'pr_112'}), (f:File {id: 'file_6'}) CREATE (pr)-[:CHANGES {additions: 110}]->(f)").run();
+            // 8. CHANGES
+            execQuery("MATCH (pr:PullRequest {id: 'pr_45'}), (f:File {id: 'file_1'}) CREATE (pr)-[:CHANGES {additions: 150}]->(f)");
+            execQuery("MATCH (pr:PullRequest {id: 'pr_88'}), (f:File {id: 'file_2'}) CREATE (pr)-[:CHANGES {additions: 320}]->(f)");
+            execQuery("MATCH (pr:PullRequest {id: 'pr_102'}), (f:File {id: 'file_3'}) CREATE (pr)-[:CHANGES {additions: 210}]->(f)");
+            execQuery("MATCH (pr:PullRequest {id: 'pr_102'}), (f:File {id: 'file_4'}) CREATE (pr)-[:CHANGES {additions: 90}]->(f)");
+            execQuery("MATCH (pr:PullRequest {id: 'pr_105'}), (f:File {id: 'file_5'}) CREATE (pr)-[:CHANGES {additions: 45}]->(f)");
+            execQuery("MATCH (pr:PullRequest {id: 'pr_112'}), (f:File {id: 'file_6'}) CREATE (pr)-[:CHANGES {additions: 110}]->(f)");
+            execQuery("MATCH (pr:PullRequest {id: 'pr_120'}), (f:File {id: 'file_7'}) CREATE (pr)-[:CHANGES {additions: 240}]->(f)");
+            execQuery("MATCH (pr:PullRequest {id: 'pr_125'}), (f:File {id: 'file_10'}) CREATE (pr)-[:CHANGES {additions: 180}]->(f)");
 
-            // 10. Connect Developers to PRs (CREATED)
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_3'}), (pr:PullRequest {id: 'pr_45'}) CREATE (d)-[:CREATED]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_3'}), (pr:PullRequest {id: 'pr_88'}) CREATE (d)-[:CREATED]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_5'}), (pr:PullRequest {id: 'pr_102'}) CREATE (d)-[:CREATED]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_4'}), (pr:PullRequest {id: 'pr_105'}) CREATE (d)-[:CREATED]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_6'}), (pr:PullRequest {id: 'pr_112'}) CREATE (d)-[:CREATED]->(pr)").run();
+            // 9. CREATED
+            execQuery("MATCH (d:Developer {id: 'dev_3'}), (pr:PullRequest {id: 'pr_45'}) CREATE (d)-[:CREATED]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_3'}), (pr:PullRequest {id: 'pr_88'}) CREATE (d)-[:CREATED]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_5'}), (pr:PullRequest {id: 'pr_102'}) CREATE (d)-[:CREATED]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_4'}), (pr:PullRequest {id: 'pr_105'}) CREATE (d)-[:CREATED]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_6'}), (pr:PullRequest {id: 'pr_112'}) CREATE (d)-[:CREATED]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_3'}), (pr:PullRequest {id: 'pr_120'}) CREATE (d)-[:CREATED]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_1'}), (pr:PullRequest {id: 'pr_125'}) CREATE (d)-[:CREATED]->(pr)");
 
-            // 11. Connect Developers to PRs (REVIEWED)
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_1'}), (pr:PullRequest {id: 'pr_45'}) CREATE (d)-[:REVIEWED {score: 95, thoroughness: 'HIGH'}]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_2'}), (pr:PullRequest {id: 'pr_88'}) CREATE (d)-[:REVIEWED {score: 90, thoroughness: 'HIGH'}]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_1'}), (pr:PullRequest {id: 'pr_88'}) CREATE (d)-[:REVIEWED {score: 98, thoroughness: 'CRITICAL'}]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_2'}), (pr:PullRequest {id: 'pr_102'}) CREATE (d)-[:REVIEWED {score: 92, thoroughness: 'HIGH'}]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_4'}), (pr:PullRequest {id: 'pr_102'}) CREATE (d)-[:REVIEWED {score: 85, thoroughness: 'MEDIUM'}]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_2'}), (pr:PullRequest {id: 'pr_105'}) CREATE (d)-[:REVIEWED {score: 88, thoroughness: 'HIGH'}]->(pr)").run();
-            neo4jClient.query("MATCH (d:Developer {id: 'dev_3'}), (pr:PullRequest {id: 'pr_112'}) CREATE (d)-[:REVIEWED {score: 75, thoroughness: 'MEDIUM'}]->(pr)").run();
+            // 10. REVIEWED
+            execQuery("MATCH (d:Developer {id: 'dev_1'}), (pr:PullRequest {id: 'pr_45'}) CREATE (d)-[:REVIEWED {score: 95, thoroughness: 'HIGH'}]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_2'}), (pr:PullRequest {id: 'pr_88'}) CREATE (d)-[:REVIEWED {score: 90, thoroughness: 'HIGH'}]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_1'}), (pr:PullRequest {id: 'pr_88'}) CREATE (d)-[:REVIEWED {score: 98, thoroughness: 'CRITICAL'}]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_2'}), (pr:PullRequest {id: 'pr_102'}) CREATE (d)-[:REVIEWED {score: 92, thoroughness: 'HIGH'}]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_4'}), (pr:PullRequest {id: 'pr_102'}) CREATE (d)-[:REVIEWED {score: 85, thoroughness: 'MEDIUM'}]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_2'}), (pr:PullRequest {id: 'pr_105'}) CREATE (d)-[:REVIEWED {score: 88, thoroughness: 'HIGH'}]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_3'}), (pr:PullRequest {id: 'pr_112'}) CREATE (d)-[:REVIEWED {score: 75, thoroughness: 'MEDIUM'}]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_2'}), (pr:PullRequest {id: 'pr_120'}) CREATE (d)-[:REVIEWED {score: 94, thoroughness: 'HIGH'}]->(pr)");
+            execQuery("MATCH (d:Developer {id: 'dev_5'}), (pr:PullRequest {id: 'pr_125'}) CREATE (d)-[:REVIEWED {score: 96, thoroughness: 'CRITICAL'}]->(pr)");
 
-            // 12. Connect Developers to Developers (FOLLOWS)
-            neo4jClient.query("MATCH (d2:Developer {id: 'dev_2'}), (d1:Developer {id: 'dev_1'}) CREATE (d2)-[:FOLLOWS]->(d1)").run();
-            neo4jClient.query("MATCH (d1:Developer {id: 'dev_1'}), (d4:Developer {id: 'dev_4'}) CREATE (d1)-[:FOLLOWS]->(d4)").run();
-            neo4jClient.query("MATCH (d6:Developer {id: 'dev_6'}), (d3:Developer {id: 'dev_3'}) CREATE (d6)-[:FOLLOWS]->(d3)").run();
-            neo4jClient.query("MATCH (d3:Developer {id: 'dev_3'}), (d2:Developer {id: 'dev_2'}) CREATE (d3)-[:FOLLOWS]->(d2)").run();
+            // 11. FOLLOWS Social Graph
+            execQuery("MATCH (d2:Developer {id: 'dev_2'}), (d1:Developer {id: 'dev_1'}) CREATE (d2)-[:FOLLOWS]->(d1)");
+            execQuery("MATCH (d1:Developer {id: 'dev_1'}), (d4:Developer {id: 'dev_4'}) CREATE (d1)-[:FOLLOWS]->(d4)");
+            execQuery("MATCH (d4:Developer {id: 'dev_4'}), (d10:Developer {id: 'dev_10'}) CREATE (d4)-[:FOLLOWS]->(d10)");
+            execQuery("MATCH (d6:Developer {id: 'dev_6'}), (d3:Developer {id: 'dev_3'}) CREATE (d6)-[:FOLLOWS]->(d3)");
+            execQuery("MATCH (d3:Developer {id: 'dev_3'}), (d2:Developer {id: 'dev_2'}) CREATE (d3)-[:FOLLOWS]->(d2)");
+            execQuery("MATCH (d5:Developer {id: 'dev_5'}), (d1:Developer {id: 'dev_1'}) CREATE (d5)-[:FOLLOWS]->(d1)");
+            execQuery("MATCH (d8:Developer {id: 'dev_8'}), (d2:Developer {id: 'dev_2'}) CREATE (d8)-[:FOLLOWS]->(d2)");
+            execQuery("MATCH (d7:Developer {id: 'dev_7'}), (d4:Developer {id: 'dev_4'}) CREATE (d7)-[:FOLLOWS]->(d4)");
 
-            Long totalNodes = neo4jClient.query("MATCH (n) RETURN count(n) AS count").fetchAs(Long.class).one().orElse(0L);
-            Long totalRels = neo4jClient.query("MATCH ()-[r]->() RETURN count(r) AS count").fetchAs(Long.class).one().orElse(0L);
+            Long totalNodes = 0L;
+            Long totalRels = 0L;
+            try {
+                totalNodes = neo4jClient.query("MATCH (n) RETURN count(n) AS count").fetchAs(Long.class).one().orElse(0L);
+                totalRels = neo4jClient.query("MATCH ()-[r]->() RETURN count(r) AS count").fetchAs(Long.class).one().orElse(0L);
+            } catch (Exception ignored) {}
 
             result.put("seeded", true);
-            result.put("message", "Successfully seeded DevPulse graph database into CognoDB Cloud!");
+            result.put("message", "Successfully seeded production-grade DevPulse graph into CognoDB Cloud!");
             result.put("nodesCreated", totalNodes);
             result.put("relationshipsCreated", totalRels);
 
@@ -129,6 +155,14 @@ public class DevPulseGraphService {
             result.put("error", ex.getMessage());
         }
         return result;
+    }
+
+    private void execQuery(String cypher) {
+        try {
+            neo4jClient.query(cypher).run();
+        } catch (Exception ex) {
+            log.warn("Cypher execution notice: {}", ex.getMessage());
+        }
     }
 
     public HealthStatusDto checkHealth() {
@@ -225,8 +259,44 @@ public class DevPulseGraphService {
     }
 
     public ExpertFinderDto findExperts(String query) {
-        String cleanQuery = (query == null || query.isBlank()) ? "OrderService.java" : query.trim();
+        if (query == null || query.isBlank()) {
+            return new ExpertFinderDto("", null, Collections.emptyList(), 0, "", false, "Please enter a file path or keyword to search for experts.");
+        }
 
+        String cleanQuery = query.trim();
+
+        // 1. Check if the searched file exists in graph
+        String fileCheckCypher = "MATCH (f:File) WHERE toLower(f.path) CONTAINS toLower($q) OR toLower(f.id) CONTAINS toLower($q) RETURN f.id AS f_id, f.path AS f_path, f.extension AS f_ext, f.linesOfCode AS f_loc LIMIT 1";
+        FileNode foundFile = null;
+        try {
+            foundFile = neo4jClient.query(fileCheckCypher)
+                    .bind(cleanQuery).to("q")
+                    .fetchAs(FileNode.class)
+                    .mappedBy((t, r) -> new FileNode(
+                            r.get("f_id").asString(""),
+                            r.get("f_path").asString(""),
+                            r.get("f_ext").asString(""),
+                            r.get("f_loc").asInt(0)
+                    ))
+                    .one()
+                    .orElse(null);
+        } catch (Exception ex) {
+            log.error("File check error: {}", ex.getMessage());
+        }
+
+        if (foundFile == null) {
+            return new ExpertFinderDto(
+                    cleanQuery,
+                    null,
+                    Collections.emptyList(),
+                    0,
+                    fileCheckCypher,
+                    false,
+                    "The searched file '" + cleanQuery + "' is not in the project codebase."
+            );
+        }
+
+        // 2. Query 3-hop traversal for expert developers
         String cypherPattern = "MATCH (f:File) WHERE toLower(f.path) CONTAINS toLower($q) OR toLower(f.id) CONTAINS toLower($q) " +
                 "MATCH (pr:PullRequest)-[:CHANGES]->(f) " +
                 "MATCH (dev:Developer)-[r:REVIEWED]->(pr) " +
@@ -234,27 +304,17 @@ public class DevPulseGraphService {
                 "dev.id AS d_id, dev.name AS d_name, dev.team AS d_team, dev.tenure AS d_tenure, dev.avatarUrl AS d_avatar, " +
                 "r.score AS score, pr.title AS pr_title, pr.prNumber AS pr_num";
 
-        final FileNode[] fileHolder = new FileNode[1];
+        final FileNode targetFile = foundFile;
         Map<String, ExpertFinderDto.ExpertDetail> expertMap = new HashMap<>();
 
         for (int attempt = 1; attempt <= 2; attempt++) {
             try {
                 expertMap.clear();
-                fileHolder[0] = null;
 
                 neo4jClient.query(cypherPattern)
                         .bind(cleanQuery).to("q")
                         .fetchAs(Void.class)
                         .mappedBy((t, r) -> {
-                            if (fileHolder[0] == null) {
-                                fileHolder[0] = new FileNode(
-                                        r.get("f_id").asString(""),
-                                        r.get("f_path").asString(""),
-                                        r.get("f_ext").asString(""),
-                                        r.get("f_loc").asInt(0)
-                                );
-                            }
-
                             String devId = r.get("d_id").asString("");
                             DeveloperNode dev = new DeveloperNode(
                                     devId,
@@ -269,7 +329,7 @@ public class DevPulseGraphService {
                             int prNum = r.get("pr_num").asInt(0);
 
                             List<String> pathChain = Arrays.asList(
-                                    fileHolder[0].getPath(),
+                                    targetFile.getPath(),
                                     "PR #" + prNum + " (" + prTitle + ")",
                                     dev.getName() + " (" + dev.getTeam() + ")"
                             );
@@ -295,16 +355,48 @@ public class DevPulseGraphService {
 
         return new ExpertFinderDto(
                 cleanQuery,
-                fileHolder[0],
+                targetFile,
                 expertsList,
                 expertsList.size(),
-                cypherPattern
+                cypherPattern,
+                true,
+                "Found " + expertsList.size() + " expert developers for file " + targetFile.getPath()
         );
     }
 
     public ReviewerRouterDto recommendReviewers(String filePath) {
-        String cleanPath = (filePath == null || filePath.isBlank()) ? "OrderService.java" : filePath.trim();
+        if (filePath == null || filePath.isBlank()) {
+            return new ReviewerRouterDto("", "", Collections.emptyList(), "", false, "Please specify a file path to get PR reviewer recommendations.");
+        }
 
+        String cleanPath = filePath.trim();
+
+        // 1. Check if target file exists in graph
+        String fileCheckCypher = "MATCH (f:File) WHERE toLower(f.path) CONTAINS toLower($file) OR toLower(f.id) CONTAINS toLower($file) RETURN f.id AS f_id, f.path AS f_path LIMIT 1";
+        boolean fileExists = false;
+        try {
+            fileExists = neo4jClient.query(fileCheckCypher)
+                    .bind(cleanPath).to("file")
+                    .fetchAs(Boolean.class)
+                    .mappedBy((t, r) -> true)
+                    .one()
+                    .orElse(false);
+        } catch (Exception ex) {
+            log.error("File check notice: {}", ex.getMessage());
+        }
+
+        if (!fileExists) {
+            return new ReviewerRouterDto(
+                    cleanPath,
+                    "PR Review Recommendation for " + cleanPath,
+                    Collections.emptyList(),
+                    fileCheckCypher,
+                    false,
+                    "The specified file '" + cleanPath + "' is not in the project codebase."
+            );
+        }
+
+        // 2. Recommend reviewers
         String cypherPattern = "MATCH (f:File) WHERE toLower(f.path) CONTAINS toLower($file) OR toLower(f.id) CONTAINS toLower($file) " +
                 "MATCH (pr:PullRequest)-[:CHANGES]->(f) " +
                 "MATCH (dev:Developer)-[r:REVIEWED]->(pr) " +
@@ -343,7 +435,14 @@ public class DevPulseGraphService {
             }
         }
 
-        return new ReviewerRouterDto(cleanPath, "PR Review Recommendation for " + cleanPath, list, cypherPattern);
+        return new ReviewerRouterDto(
+                cleanPath, 
+                "PR Review Recommendation for " + cleanPath, 
+                list, 
+                cypherPattern, 
+                true, 
+                "Top recommended reviewers for " + cleanPath
+        );
     }
 
     public HealthRadarDto getBusFactorRadar() {

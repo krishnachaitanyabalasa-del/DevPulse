@@ -58,14 +58,18 @@ public class ReviewerRouterDto {
     private String pullRequestTitle;
     private List<ReviewerRecommendation> recommendedReviewers;
     private String cypherQueryPattern;
+    private boolean found;
+    private String message;
 
     public ReviewerRouterDto() {}
 
-    public ReviewerRouterDto(String targetFile, String pullRequestTitle, List<ReviewerRecommendation> recommendedReviewers, String cypherQueryPattern) {
+    public ReviewerRouterDto(String targetFile, String pullRequestTitle, List<ReviewerRecommendation> recommendedReviewers, String cypherQueryPattern, boolean found, String message) {
         this.targetFile = targetFile;
         this.pullRequestTitle = pullRequestTitle;
         this.recommendedReviewers = recommendedReviewers;
         this.cypherQueryPattern = cypherQueryPattern;
+        this.found = found;
+        this.message = message;
     }
 
     public String getTargetFile() {
@@ -98,5 +102,21 @@ public class ReviewerRouterDto {
 
     public void setCypherQueryPattern(String cypherQueryPattern) {
         this.cypherQueryPattern = cypherQueryPattern;
+    }
+
+    public boolean isFound() {
+        return found;
+    }
+
+    public void setFound(boolean found) {
+        this.found = found;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

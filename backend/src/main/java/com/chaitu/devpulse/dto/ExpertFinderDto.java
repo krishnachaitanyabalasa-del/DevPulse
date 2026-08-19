@@ -70,15 +70,19 @@ public class ExpertFinderDto {
     private List<ExpertDetail> experts;
     private int totalExperts;
     private String cypherQueryPattern;
+    private boolean found;
+    private String message;
 
     public ExpertFinderDto() {}
 
-    public ExpertFinderDto(String searchQuery, FileNode targetFile, List<ExpertDetail> experts, int totalExperts, String cypherQueryPattern) {
+    public ExpertFinderDto(String searchQuery, FileNode targetFile, List<ExpertDetail> experts, int totalExperts, String cypherQueryPattern, boolean found, String message) {
         this.searchQuery = searchQuery;
         this.targetFile = targetFile;
         this.experts = experts;
         this.totalExperts = totalExperts;
         this.cypherQueryPattern = cypherQueryPattern;
+        this.found = found;
+        this.message = message;
     }
 
     public String getSearchQuery() {
@@ -119,5 +123,21 @@ public class ExpertFinderDto {
 
     public void setCypherQueryPattern(String cypherQueryPattern) {
         this.cypherQueryPattern = cypherQueryPattern;
+    }
+
+    public boolean isFound() {
+        return found;
+    }
+
+    public void setFound(boolean found) {
+        this.found = found;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
