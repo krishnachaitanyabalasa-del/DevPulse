@@ -1,296 +1,145 @@
 import React from 'react';
-import { Users, FolderGit2, GitPullRequest, FileText, Info, CheckCircle2 } from 'lucide-react';
+import { Users, FolderGit2, GitPullRequest, FileText } from 'lucide-react';
 import MetricCard from '../components/MetricCard';
-import GraphVisualizer from '../components/GraphVisualizer';
+import heroImg from '../images/image.png';
 
 export default function Overview({ 
-  developers, 
-  files, 
-  expertResult, 
-  expertQuery, 
-  setExpertQuery, 
-  onExpertSearch, 
-  selectedFile, 
-  setSelectedFile, 
-  reviewerResult, 
-  onReviewerSelect, 
-  radarResult,
-  setActiveTab 
+  developers = [], 
+  files = [], 
+  repositories = [],
+  pullRequests = []
 }) {
-  const topExpert = expertResult?.experts?.[0];
-  const reviewers = reviewerResult?.recommendedReviewers || [];
-  const modules = radarResult?.criticalModules || radarResult?.modules || [];
-
   return (
-    <div>
-      {/* Metric Cards (Direct Backend Data) */}
-      <section className="stats-grid">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', paddingBottom: '32px' }}>
+      {/* Hero Section */}
+      <div 
+        style={{
+          position: 'relative',
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #eff6ff 100%)',
+          padding: '48px 24px',
+          textAlign: 'center',
+          overflow: 'hidden',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 4px 20px -4px rgba(0, 0, 0, 0.03)'
+        }}
+        className="overview-hero-card"
+      >
+        {/* Constellation SVG Network Background */}
+        <svg 
+          width="100%" 
+          height="100%" 
+          viewBox="0 0 1000 300" 
+          preserveAspectRatio="none"
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.45 }}
+        >
+          <defs>
+            <linearGradient id="heroConstellationGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.12" />
+              <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.15" />
+            </linearGradient>
+          </defs>
+
+          <path d="M0,150 Q250,80 500,160 T1000,120 V300 H0 Z" fill="url(#heroConstellationGrad)" />
+
+          <line x1="80" y1="120" x2="200" y2="80" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="200" y1="80" x2="350" y2="140" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="350" y1="140" x2="520" y2="90" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="520" y1="90" x2="680" y2="170" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="680" y1="170" x2="850" y2="100" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="850" y1="100" x2="950" y2="160" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+
+          <circle cx="80" cy="120" r="4" fill="#a855f7" opacity="0.8" />
+          <circle cx="200" cy="80" r="6" fill="#3b82f6" opacity="0.8" />
+          <circle cx="350" cy="140" r="5" fill="#8b5cf6" opacity="0.8" />
+          <circle cx="520" cy="90" r="7" fill="#6366f1" opacity="0.9" />
+          <circle cx="680" cy="170" r="5" fill="#3b82f6" opacity="0.8" />
+          <circle cx="850" cy="100" r="6" fill="#a855f7" opacity="0.8" />
+          <circle cx="950" cy="160" r="4" fill="#8b5cf6" opacity="0.8" />
+        </svg>
+
+        {/* Hero Content */}
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '750px', margin: '0 auto' }}>
+          
+
+          {/* Hero Image from images/image.png */}
+          <div style={{ margin: '24px auto', maxWidth: '540px' }}>
+            <img 
+              src={heroImg} 
+              alt="DevPulse Network Graph" 
+              style={{ width: '100%', height: 'auto', maxHeight: '220px', objectFit: 'contain', filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.05))' }}
+            />
+          </div>
+
+          <p 
+            style={{ 
+              fontSize: '0.98rem', 
+              fontStyle: 'italic', 
+              color: 'var(--text-muted)', 
+              margin: 0,
+              fontWeight: 500
+            }}
+          >
+            “ Understand your code. Empower your people. Elevate your engineering. ”
+          </p>
+        </div>
+      </div>
+
+      {/* Metric Cards Grid */}
+      <section 
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '20px'
+        }}
+      >
         <MetricCard 
           title="Developers" 
           value={developers.length} 
-          trend="▲ Live CognoDB Graph Nodes" 
+          badge="↑ 8%"
+          subtitle="Live CognoDB Graph Nodes" 
           icon={Users} 
+          iconBg="#eff6ff"
           color="#2563eb" 
-          sparklinePath="M2 25 L15 20 L30 24 L45 10 L58 4" 
+          sparklinePath="M0 30 Q 30 15, 60 25 T 120 18 T 170 12 L 200 8" 
         />
+
         <MetricCard 
           title="Repositories" 
-          value={developers.length > 0 ? 2 : 0} 
-          trend="▲ Connected Repositories" 
+          value={repositories.length} 
+          badge="↑ 0%"
+          subtitle="Connected Repositories" 
           icon={FolderGit2} 
+          iconBg="#f3e8ff"
           color="#8b5cf6" 
-          sparklinePath="M2 22 L18 25 L32 15 L46 18 L58 6" 
+          sparklinePath="M0 25 Q 40 30, 80 15 T 140 22 T 180 10 L 200 12" 
         />
+
         <MetricCard 
           title="Pull Requests" 
-          value={reviewers.length > 0 ? 5 : 0} 
-          trend="▲ Evaluated PR Nodes" 
+          value={pullRequests.length} 
+          badge="↑ 12%"
+          subtitle="Evaluated PR Nodes" 
           icon={GitPullRequest} 
+          iconBg="#ecfdf5"
           color="#10b981" 
-          sparklinePath="M2 28 L15 18 L30 22 L45 8 L58 12" 
+          sparklinePath="M0 28 Q 30 20, 70 24 T 130 10 T 170 16 L 200 6" 
         />
+
         <MetricCard 
           title="Files" 
           value={files.length} 
-          trend="▲ Indexed Code Modules" 
+          badge="↑ 6%"
+          subtitle="Indexed Code Modules" 
           icon={FileText} 
+          iconBg="#fff7ed"
           color="#f59e0b" 
-          sparklinePath="M2 20 L16 12 L30 25 L44 14 L58 6" 
+          sparklinePath="M0 22 Q 40 12, 80 26 T 140 14 T 180 8 L 200 4" 
         />
       </section>
 
-      {/* Main 2-Column Dashboard Grid */}
-      <div className="dashboard-grid">
-        {/* Card 1: Graph Overview Visualizer */}
-        <GraphVisualizer />
-
-        {/* Card 2: Smart Reviewer Router (Live Backend Data) */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title">
-              Smart Reviewer Router <Info size={14} className="info-icon" />
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '14px' }}>
-            <select 
-              style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'white', fontWeight: 600, fontSize: '0.85rem' }}
-              value={selectedFile}
-              onChange={(e) => { 
-                setSelectedFile(e.target.value); 
-                onReviewerSelect(e.target.value); 
-              }}
-            >
-              {files.length > 0 ? (
-                files.map((f, i) => (
-                  <option key={i} value={f.path}>PR #{100 + i} feat: update {f.path}</option>
-                ))
-              ) : (
-                <option value="OrderService.java">PR #102 feat: refactor OrderService.java</option>
-              )}
-            </select>
-          </div>
-
-          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px' }}>
-            Top recommended reviewers (Live API Output)
-          </div>
-
-          <div className="reviewer-list">
-            {reviewers.length > 0 ? (
-              reviewers.map((rec, idx) => (
-                <div key={idx} className="reviewer-item">
-                  <div className="reviewer-info">
-                    <span className="reviewer-rank">{idx + 1}</span>
-                    <img 
-                      src={rec.developer.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80'} 
-                      alt={rec.developer.name} 
-                      className="reviewer-avatar" 
-                    />
-                    <div>
-                      <div className="reviewer-name">{rec.developer.name}</div>
-                      <div className="reviewer-reason">{rec.developer.team} — {rec.reason}</div>
-                    </div>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.85rem', color: idx === 0 ? '#10b981' : idx === 1 ? '#2563eb' : '#f59e0b' }}>
-                      {Math.round(rec.relevanceScore)}%
-                    </span>
-                    <div className="reviewer-progress-bar">
-                      <div 
-                        className="progress-fill" 
-                        style={{ 
-                          width: `${Math.round(rec.relevanceScore)}%`, 
-                          background: idx === 0 ? '#10b981' : idx === 1 ? '#2563eb' : '#f59e0b' 
-                        }} 
-                      />
-                    </div>
-                  </div>
-
-                  <button className="btn-view-profile">View Profile</button>
-                </div>
-              ))
-            ) : (
-              <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                No reviewers found for this file in backend. Please run seed script or start Spring Boot backend.
-              </div>
-            )}
-          </div>
-
-          <a className="footer-link" onClick={() => setActiveTab('Reviewer Router')}>
-            View all recommended reviewers →
-          </a>
-        </div>
-      </div>
-
-      {/* Dashboard Lower Grid */}
-      <div className="dashboard-grid">
-        {/* Card 3: Expert Finder (Live Backend Traversal) */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title">
-              Expert Finder <Info size={14} className="info-icon" />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
-            <input 
-              type="text" 
-              style={{ flex: 1, padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
-              placeholder="Search file path (e.g., OrderService.java, PaymentGateway.java)"
-              value={expertQuery}
-              onChange={(e) => setExpertQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && onExpertSearch(expertQuery)}
-            />
-            <button 
-              style={{ padding: '8px 18px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
-              onClick={() => onExpertSearch(expertQuery)}
-            >
-              Search
-            </button>
-          </div>
-
-          <div style={{ background: '#f1f5f9', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', display: 'inline-block', marginBottom: '12px' }}>
-            {expertResult?.targetFile?.path || expertQuery}
-          </div>
-
-          {topExpert ? (
-            <div>
-              <div className="path-node-chain">
-                <div className="path-step-card">
-                  <div className="path-step-icon" style={{ background: '#fef3c7', color: '#d97706' }}><FileText size={20} /></div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{expertResult?.targetFile?.path || expertQuery}</span>
-                  <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>Target File</span>
-                </div>
-
-                <span className="path-edge-label">CHANGES</span>
-
-                <div className="path-step-card">
-                  <div className="path-step-icon" style={{ background: '#d1fae5', color: '#10b981' }}><GitPullRequest size={20} /></div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>PR #88</span>
-                  <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>Pull Request</span>
-                </div>
-
-                <span className="path-edge-label">REVIEWED BY</span>
-
-                <div className="path-step-card">
-                  <img 
-                    src={topExpert.developer?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80"} 
-                    alt="Reviewer" 
-                    className="path-step-icon" 
-                  />
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{topExpert.developer?.name}</span>
-                  <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>{topExpert.developer?.team}</span>
-                </div>
-
-                <span className="path-edge-label">FOLLOWS</span>
-
-                <div className="path-step-card">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="John" className="path-step-icon" />
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>John Doe (You)</span>
-                  <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>You</span>
-                </div>
-              </div>
-
-              <div style={{ fontSize: '0.8rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckCircle2 size={14} color="#10b981" />
-                <span>
-                  {topExpert.developer?.name} has reviewed <strong>{topExpert.reviewCount} PRs</strong> touching this file in CognoDB graph.
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              No graph path found for this search. Make sure your CognoDB database is seeded.
-            </div>
-          )}
-
-          <a className="footer-link" onClick={() => setActiveTab('Expert Finder')}>
-            View full path in graph →
-          </a>
-        </div>
-
-        {/* Card 4: Health Radar (Live Backend Data) */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title">
-              Health Radar <Info size={14} className="info-icon" />
-            </div>
-            <select style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.78rem' }}>
-              <option>Risk Score</option>
-            </select>
-          </div>
-
-          <table className="radar-table">
-            <thead>
-              <tr>
-                <th>File</th>
-                <th>Centrality Score</th>
-                <th>Developer Density</th>
-                <th>Risk Score</th>
-                <th>Risk Level</th>
-              </tr>
-            </thead>
-            <tbody>
-              {modules.length > 0 ? (
-                modules.map((mod, idx) => {
-                  const isRisk = mod.busFactorRisk ?? mod.isBusFactorRisk ?? false;
-                  const inDegree = mod.dependencyInDegree || 0;
-                  const revCount = mod.uniqueReviewersCount ?? mod.reviewerCount ?? 0;
-                  const filePath = mod.file?.path || mod.path || mod.filePath || 'Unknown';
-                  const riskLevel = isRisk ? 'High' : (inDegree > 1 ? 'Medium' : 'Low');
-                  const badgeClass = isRisk ? 'badge-high' : (inDegree > 1 ? 'badge-medium' : 'badge-low');
-                  const centrality = (0.45 + (inDegree || 1) * 0.15).toFixed(2);
-                  const density = (1.0 / (revCount + 1)).toFixed(2);
-                  const score = isRisk ? '0.91' : (centrality * density).toFixed(2);
-
-                  return (
-                    <tr key={idx}>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>src/.../{filePath}</td>
-                      <td>{centrality}</td>
-                      <td>{density}</td>
-                      <td style={{ fontWeight: 700 }}>{score}</td>
-                      <td>
-                        <span className={`badge-risk ${badgeClass}`}>{riskLevel}</span>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-                    No bus factor metrics returned from backend. Seed your CognoDB database to display metrics.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          <a className="footer-link" onClick={() => setActiveTab('Health Radar')}>
-            View full health report →
-          </a>
-        </div>
-      </div>
+      
     </div>
   );
 }

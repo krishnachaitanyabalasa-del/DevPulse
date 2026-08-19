@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ReviewerRouter({ selectedFile, setSelectedFile, onSelect, result }) {
+export default function ReviewerRouter({ selectedFile, setSelectedFile, onSelect, result, files = [] }) {
   const reviewers = result?.recommendedReviewers || [];
 
   return (
@@ -22,10 +22,15 @@ export default function ReviewerRouter({ selectedFile, setSelectedFile, onSelect
             onSelect(e.target.value);
           }}
         >
-          <option value="OrderService.java">PR #102 feat: refactor OrderService.java</option>
-          <option value="PaymentGateway.java">PR #88 feat: integrate PaymentGateway.java</option>
-          <option value="AuthCore.java">PR #45 harden AuthCore JWT security</option>
-          <option value="TokenValidator.java">PR #22 add TokenValidator expiration check</option>
+          {files.length > 0 ? (
+            files.map((f, i) => (
+              <option key={i} value={f.path}>
+                PR #{100 + i} feat: update {f.path} ({f.extension})
+              </option>
+            ))
+          ) : (
+            <option value="OrderService.java">OrderService.java</option>
+          )}
         </select>
       </div>
 

@@ -1,71 +1,110 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Search, 
   GitPullRequest, 
   ShieldAlert, 
-  Share2, 
   FolderGit2, 
   Users, 
-  Tag, 
-  FileText, 
-  Settings 
+  Moon,
+  Sun
 } from 'lucide-react';
+import logoImg from '../images/logo.png';
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar({ darkMode, setDarkMode }) {
   const menuItems = [
-    { id: 'Overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'Expert Finder', label: 'Expert Finder', icon: Search },
-    { id: 'Reviewer Router', label: 'Reviewer Router', icon: GitPullRequest },
-    { id: 'Health Radar', label: 'Health Radar', icon: ShieldAlert },
-    { id: 'Graph Explorer', label: 'Graph Explorer', icon: Share2 },
-    { id: 'Repositories', label: 'Repositories', icon: FolderGit2 },
-    { id: 'Developers', label: 'Developers', icon: Users },
-    { id: 'Tags', label: 'Tags', icon: Tag },
-    { id: 'Settings', label: 'Settings', icon: Settings },
+    { label: 'Overview', icon: LayoutDashboard, path: '/' },
+    { label: 'Expert Finder', icon: Search, path: '/experts' },
+    { label: 'Reviewer Router', icon: GitPullRequest, path: '/reviewers' },
+    { label: 'Health Radar', icon: ShieldAlert, path: '/radar' },
+    { label: 'Repositories', icon: FolderGit2, path: '/repositories' },
+    { label: 'Developers', icon: Users, path: '/developers' },
   ];
 
   return (
     <aside className="sidebar">
       <div>
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <Share2 size={20} />
-          </div>
+        {/* Sidebar Header with logo.png */}
+        <div className="sidebar-header" style={{ padding: '8px 12px 24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img 
+            src={logoImg} 
+            alt="DevPulse Logo" 
+            style={{ height: '36px', width: 'auto', objectFit: 'contain' }} 
+          />
           <div>
-            <div className="sidebar-brand-name">DevPulse</div>
-            <div className="sidebar-brand-sub">Engineering Intelligence</div>
+            <div className="sidebar-brand-name" style={{ fontSize: '1.2rem', fontWeight: 800 }}>DevPulse</div>
+            <div className="sidebar-brand-sub" style={{ fontSize: '0.7rem', color: '#64748b' }}>Engineering Intelligence</div>
           </div>
         </div>
 
+        {/* Navigation Menu */}
         <ul className="nav-menu">
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
-              <li key={item.id}>
-                <button 
-                  className={`nav-item-btn ${activeTab === item.id ? 'active' : ''}`}
-                  onClick={() => setActiveTab(item.id)}
+              <li key={item.path}>
+                <NavLink 
+                  to={item.path}
+                  end={item.path === '/'}
+                  className={({ isActive }) => `nav-item-btn ${isActive ? 'active' : ''}`}
                 >
                   <Icon size={18} />
                   {item.label}
-                </button>
+                </NavLink>
               </li>
             );
           })}
         </ul>
       </div>
 
-      <div>
-        <div className="user-profile-card">
-          <img 
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" 
-            alt="John Doe" 
-            className="user-avatar"
-          />
-          <div>
-            <div className="user-name">John Doe</div>
-            <div className="user-role">Backend Engineer</div>
+      {/* Dark Mode & Bright Mode Toggle (Profile card removed as requested) */}
+      <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+        <div 
+          onClick={() => setDarkMode(!darkMode)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justify: 'space-between',
+            padding: '12px 14px',
+            background: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '12px',
+            color: darkMode ? '#f8fafc' : '#94a3b8',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            userSelect: 'none'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {darkMode ? <Sun size={18} color="#f59e0b" /> : <Moon size={18} />}
+            <span>{darkMode ? 'Bright Mode' : 'Dark Mode'}</span>
+          </div>
+
+          <div 
+            style={{
+              width: 38,
+              height: 22,
+              borderRadius: 11,
+              background: darkMode ? '#3b82f6' : '#475569',
+              position: 'relative',
+              transition: 'background 0.2s'
+            }}
+          >
+            <div 
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                background: 'white',
+                position: 'absolute',
+                top: 2,
+                left: darkMode ? 18 : 2,
+                transition: 'left 0.2s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+              }}
+            />
           </div>
         </div>
       </div>

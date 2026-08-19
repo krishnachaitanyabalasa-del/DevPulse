@@ -1,19 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Overview from './pages/Overview';
 import ExpertFinder from './pages/ExpertFinder';
 import ReviewerRouter from './pages/ReviewerRouter';
 import HealthRadar from './pages/HealthRadar';
-import GraphExplorer from './pages/GraphExplorer';
+import Repositories from './pages/Repositories';
+import Developers from './pages/Developers';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('Overview');
+  const navigate = useNavigate();
+
+  // Dark Mode State
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [darkMode]);
 
   // Real Backend API States
   const [health, setHealth] = useState({ connected: false, nodeCount: 0, relationshipCount: 0 });
   const [developers, setDevelopers] = useState([]);
   const [files, setFiles] = useState([]);
+  const [repositories, setRepositories] = useState([]);
+  const [pullRequests, setPullRequests] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Feature Query States
@@ -38,6 +53,8 @@ export default function App() {
       fetchHealth(),
       fetchDevelopers(),
       fetchFiles(),
+      fetchRepositories(),
+      fetchPullRequests(),
       fetchExpertData(expertQuery),
       fetchReviewerData(selectedFile),
       fetchRadarData()
@@ -53,9 +70,7 @@ export default function App() {
         const data = await res.json();
         setHealth(data);
       }
-    } catch (err) {
-      console.warn('Health check retry via direct backend URL');
-    }
+    } catch (err) {}
   };
 
   const fetchDevelopers = async () => {
@@ -76,6 +91,28 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setFiles(data);
+      }
+    } catch (err) {}
+  };
+
+  const fetchRepositories = async () => {
+    try {
+      let res = await fetch(getApiUrl('/repositories'));
+      if (!res.ok) res = await fetch('http://localhost:8080/api/repositories');
+      if (res.ok) {
+        const data = await res.json();
+        setRepositories(data);
+      }
+    } catch (err) {}
+  };
+
+  const fetchPullRequests = async () => {
+    try {
+      let res = await fetch(getApiUrl('/pull-requests'));
+      if (!res.ok) res = await fetch('http://localhost:8080/api/pull-requests');
+      if (res.ok) {
+        const data = await res.json();
+        setPullRequests(data);
       }
     } catch (err) {}
   };
@@ -113,59 +150,10 @@ export default function App() {
     } catch (err) {}
   };
 
-  const renderActivePage = () => {
-    switch (activeTab) {
-      case 'Expert Finder':
-        return (
-          <ExpertFinder 
-            query={expertQuery} 
-            setQuery={setExpertQuery} 
-            onSearch={fetchExpertData} 
-            result={expertResult} 
-          />
-        );
-
-      case 'Reviewer Router':
-        return (
-          <ReviewerRouter 
-            selectedFile={selectedFile} 
-            setSelectedFile={setSelectedFile} 
-            onSelect={fetchReviewerData} 
-            result={reviewerResult} 
-          />
-        );
-
-      case 'Health Radar':
-        return <HealthRadar result={radarResult} />;
-
-      case 'Graph Explorer':
-        return <GraphExplorer />;
-
-      case 'Overview':
-      default:
-        return (
-          <Overview 
-            developers={developers} 
-            files={files} 
-            expertResult={expertResult} 
-            expertQuery={expertQuery} 
-            setExpertQuery={setExpertQuery} 
-            onExpertSearch={fetchExpertData} 
-            selectedFile={selectedFile} 
-            setSelectedFile={setSelectedFile} 
-            reviewerResult={reviewerResult} 
-            onReviewerSelect={fetchReviewerData} 
-            radarResult={radarResult} 
-            setActiveTab={setActiveTab} 
-          />
-        );
-    }
-  };
-
   return (
     <div className="app-layout">
       {/* Sidebar Navigation */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar darkMode={darkMode} setDarkMode={setDarkMode} />
 
       {/* Main Workspace */}
       <main className="main-content">
@@ -175,19 +163,52 @@ export default function App() {
           onSearchSubmit={(q) => {
             setExpertQuery(q);
             fetchExpertData(q);
-            setActiveTab('Expert Finder');
+            navigate('/experts');
           }} 
           health={health} 
           loading={loading} 
           onRefresh={loadAllData} 
         />
 
-        <section className="welcome-section">
-          <h1 className="welcome-title">Welcome back, John!</h1>
-          <p className="welcome-subtitle">Here's what's happening in your engineering graph.</p>
-        </section>
-
-        {renderActivePage()}
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <Overview 
+                developers={developers} 
+                files={files} 
+                repositories={repositories}
+                pullRequests={pullRequests}
+              />
+            } 
+          />
+          <Route 
+            path="/experts" 
+            element={
+              <ExpertFinder 
+                query={expertQuery} 
+                setQuery={setExpertQuery} 
+                onSearch={fetchExpertData} 
+                result={expertResult} 
+              />
+            } 
+          />
+          <Route 
+            path="/reviewers" 
+            element={
+              <ReviewerRouter 
+                selectedFile={selectedFile} 
+                setSelectedFile={setSelectedFile} 
+                onSelect={fetchReviewerData} 
+                result={reviewerResult} 
+                files={files}
+              />
+            } 
+          />
+          <Route path="/radar" element={<HealthRadar result={radarResult} />} />
+          <Route path="/repositories" element={<Repositories repositories={repositories} files={files} />} />
+          <Route path="/developers" element={<Developers developers={developers} />} />
+        </Routes>
       </main>
     </div>
   );

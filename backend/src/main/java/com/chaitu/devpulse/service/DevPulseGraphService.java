@@ -7,6 +7,7 @@ import com.chaitu.devpulse.dto.ReviewerRouterDto;
 import com.chaitu.devpulse.model.DeveloperNode;
 import com.chaitu.devpulse.model.FileNode;
 import com.chaitu.devpulse.model.PullRequestNode;
+import com.chaitu.devpulse.model.RepositoryNode;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class DevPulseGraphService {
     private final DeveloperService developerService;
     private final FileService fileService;
     private final PullRequestService pullRequestService;
+    private final RepositoryService repositoryService;
     private final ExpertFinderService expertFinderService;
     private final ReviewerRouterService reviewerRouterService;
     private final RadarService radarService;
@@ -30,6 +32,7 @@ public class DevPulseGraphService {
             DeveloperService developerService,
             FileService fileService,
             PullRequestService pullRequestService,
+            RepositoryService repositoryService,
             ExpertFinderService expertFinderService,
             ReviewerRouterService reviewerRouterService,
             RadarService radarService
@@ -39,6 +42,7 @@ public class DevPulseGraphService {
         this.developerService = developerService;
         this.fileService = fileService;
         this.pullRequestService = pullRequestService;
+        this.repositoryService = repositoryService;
         this.expertFinderService = expertFinderService;
         this.reviewerRouterService = reviewerRouterService;
         this.radarService = radarService;
@@ -62,6 +66,10 @@ public class DevPulseGraphService {
 
     public List<PullRequestNode> getAllPullRequests() {
         return pullRequestService.getAllPullRequests();
+    }
+
+    public List<RepositoryNode> getAllRepositories() {
+        return repositoryService.getAllRepositories();
     }
 
     public ExpertFinderDto findExperts(String query) {

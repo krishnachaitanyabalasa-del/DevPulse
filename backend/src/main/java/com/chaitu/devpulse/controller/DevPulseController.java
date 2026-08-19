@@ -7,6 +7,7 @@ import com.chaitu.devpulse.dto.ReviewerRouterDto;
 import com.chaitu.devpulse.model.DeveloperNode;
 import com.chaitu.devpulse.model.FileNode;
 import com.chaitu.devpulse.model.PullRequestNode;
+import com.chaitu.devpulse.model.RepositoryNode;
 import com.chaitu.devpulse.service.DevPulseGraphService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -79,5 +80,10 @@ public class DevPulseController {
     @GetMapping("/pull-requests")
     public ResponseEntity<List<PullRequestNode>> getAllPullRequests() {
         return ResponseEntity.ok(graphService.getAllPullRequests());
+    }
+
+    @GetMapping("/repositories")
+    public ResponseEntity<List<RepositoryNode>> getAllRepositories() {
+        return ResponseEntity.ok(graphService.getAllRepositories());
     }
 }

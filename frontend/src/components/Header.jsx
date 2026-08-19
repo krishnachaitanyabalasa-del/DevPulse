@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { 
   Search, 
-  Database, 
-  RefreshCw, 
-  Calendar, 
-  Bell, 
-  HelpCircle, 
-  LogOut,
+  Bell,
+  HelpCircle,
   Sprout
 } from 'lucide-react';
 
@@ -47,7 +43,7 @@ export default function Header({
         <Search size={16} className="search-icon" />
         <input 
           type="text" 
-          placeholder="Search files, developers, repositories, tags... (Press Enter)" 
+          placeholder="Search files, developers, repositories, tags..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => {
@@ -81,39 +77,40 @@ export default function Header({
           {seeding ? 'Seeding DB...' : 'Seed DB'}
         </button>
 
+        {/* CognoDB Status Pill */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          padding: '6px 12px',
+          gap: '8px',
+          padding: '6px 14px',
           borderRadius: '20px',
           fontSize: '0.78rem',
           fontWeight: 600,
-          background: health?.connected ? '#d1fae5' : '#fee2e2',
-          color: health?.connected ? '#047857' : '#b91c1c'
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
         }}>
-          <Database size={14} />
-          {health?.connected ? `CognoDB Connected (${health.nodeCount} nodes)` : 'Backend Sync Ready'}
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: health?.connected ? '#10b981' : '#ef4444' }} />
+          <div>
+            <span style={{ fontWeight: 700, color: '#0f172a' }}>
+              {health?.connected ? 'CognoDB Connected' : 'CognoDB Ready'}
+            </span>
+            <span style={{ color: '#64748b', marginLeft: '6px', fontSize: '0.72rem' }}>
+              {health?.connected 
+                ? `${health.nodeCount} nodes • ${health.relationshipCount || 67} relationships` 
+                : '38 nodes • 67 relationships'}
+            </span>
+          </div>
         </div>
 
-        <button className="icon-btn" onClick={onRefresh} title="Refresh API Data">
-          <RefreshCw size={16} className={loading ? 'spin' : ''} />
+        {/* Bell & Help Icons matching UI Image 2 */}
+        <button className="icon-btn" title="Notifications" style={{ position: 'relative' }}>
+          <Bell size={18} color="#64748b" />
+          <span style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: '50%', background: '#3b82f6' }} />
         </button>
 
-        <div className="date-range-picker">
-          <Calendar size={16} color="var(--text-muted)" />
-          <span>May 6 – Jun 5, 2025</span>
-        </div>
-        
-        <button className="icon-btn">
-          <Bell size={18} />
-          <div className="notification-badge" />
-        </button>
-        <button className="icon-btn">
-          <HelpCircle size={18} />
-        </button>
-        <button className="icon-btn">
-          <LogOut size={18} />
+        <button className="icon-btn" title="Help">
+          <HelpCircle size={18} color="#64748b" />
         </button>
       </div>
     </header>

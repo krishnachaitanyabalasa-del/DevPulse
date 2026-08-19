@@ -77,8 +77,8 @@ export default function ExpertFinder({ query, setQuery, onSearch, result }) {
 
             <div className="path-step-card">
               <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="John" className="path-step-icon" style={{ width: 48, height: 48 }} />
-              <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>John Doe (You)</span>
-              <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>You</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>John Doe</span>
+              <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Backend Engineer</span>
             </div>
           </div>
         ))
