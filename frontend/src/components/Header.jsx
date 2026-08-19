@@ -43,7 +43,7 @@ export default function Header({
         <Search size={16} className="search-icon" />
         <input 
           type="text" 
-          placeholder="Search files, developers, repositories, tags..." 
+          placeholder="search file path or tag(Ex:OrderService.java)" 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => {
@@ -52,30 +52,10 @@ export default function Header({
             }
           }}
         />
-        <span className="kbd-shortcut">⌘ K</span>
       </div>
 
       <div className="top-controls">
-        <button 
-          onClick={handleSeed}
-          disabled={seeding}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '6px 14px',
-            borderRadius: '20px',
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            background: '#2563eb',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer'
-          }}
-        >
-          <Sprout size={14} className={seeding ? 'spin' : ''} />
-          {seeding ? 'Seeding DB...' : 'Seed DB'}
-        </button>
+        
 
         {/* CognoDB Status Pill */}
         <div style={{
@@ -103,15 +83,7 @@ export default function Header({
           </div>
         </div>
 
-        {/* Bell & Help Icons */}
-        <button className="icon-btn" title="Notifications" style={{ position: 'relative' }}>
-          <Bell size={18} color="var(--text-muted)" />
-          <span style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: '50%', background: '#3b82f6' }} />
-        </button>
-
-        <button className="icon-btn" title="Help">
-          <HelpCircle size={18} color="var(--text-muted)" />
-        </button>
+        
       </div>
     </header>
   );

@@ -32,7 +32,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   // Feature Query States
-  const [searchQuery, setSearchQuery] = useState('OrderService.java');
+  const [searchQuery, setSearchQuery] = useState('');
   const [expertQuery, setExpertQuery] = useState('OrderService.java');
   const [expertResult, setExpertResult] = useState(null);
 

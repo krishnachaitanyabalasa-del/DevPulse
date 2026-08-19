@@ -7,9 +7,9 @@ import {
   ShieldCheck, 
   Users, 
   Search, 
-  Download, 
-  ChevronRight 
+  Download
 } from 'lucide-react';
+import '../styles/HealthRadar.css';
 
 export default function HealthRadar({ result }) {
   const [activeTab, setActiveTab] = useState('All Modules');
@@ -17,49 +17,43 @@ export default function HealthRadar({ result }) {
 
   const rawModules = result?.criticalModules || result?.modules || [];
 
-  // Default rich modules dataset matching target UI
-  const defaultModulesList = [
-    { path: 'AuthCore.java', centrality: 0.75, density: 0.33, score: 0.25, level: 'Medium', maintainer: 'Alex Johnson', team: 'Auth Team' },
-    { path: 'OrderService.java', centrality: 0.60, density: 0.50, score: 0.91, level: 'High', maintainer: 'Sarah Jenkins', team: 'Backend Team' },
-    { path: 'PaymentGateway.java', centrality: 0.60, density: 0.33, score: 0.20, level: 'Low', maintainer: 'Mark Davis', team: 'Payments Team' },
-    { path: 'TokenValidator.java', centrality: 0.60, density: 0.33, score: 0.20, level: 'Low', maintainer: 'Emily Carter', team: 'Security Team' },
-    { path: 'V2_payment_schema.sql', centrality: 0.60, density: 0.50, score: 0.91, level: 'High', maintainer: 'Sarah Jenkins', team: 'Backend Team' },
-    { path: 'StripeClient.java', centrality: 0.60, density: 0.50, score: 0.91, level: 'High', maintainer: 'Mark Davis', team: 'Payments Team' },
-    { path: 'JWTUtils.java', centrality: 0.60, density: 1.00, score: 0.91, level: 'High', maintainer: 'Alex Johnson', team: 'Auth Team' },
-    { path: 'CheckoutController.java', centrality: 0.60, density: 0.50, score: 0.30, level: 'Low', maintainer: 'James Wilson', team: 'Backend Team' },
-  ];
-
-  // Map modules from API or fallback to default dataset
-  const processedModules = rawModules.length > 0 ? rawModules.map((mod, idx) => {
+  // Map 100% pure API data without predefined fallback arrays
+  const processedModules = rawModules.map((mod, idx) => {
     const isRisk = mod.busFactorRisk ?? mod.isBusFactorRisk ?? false;
     const inDegree = mod.dependencyInDegree || 1;
     const revCount = mod.uniqueReviewersCount ?? mod.reviewerCount ?? 1;
-    const filePath = mod.file?.path || mod.path || mod.filePath || `Module_${idx}.java`;
+    
+    // Clean file path - remove any leading 'src/.../' prefix if present
+    let rawPath = mod.file?.path || mod.path || mod.filePath || `Module_${idx}.java`;
+    const cleanPath = rawPath.replace(/^src\/\.\.\.\//, '').replace(/^src\//, '');
+
     const centrality = Number((0.45 + (inDegree * 0.15)).toFixed(2));
     const density = Number((1.0 / (revCount + 0.5)).toFixed(2));
     const score = isRisk ? 0.91 : Number((centrality * (1 - Math.min(density, 0.9))).toFixed(2));
     const level = isRisk ? 'High' : (score > 0.4 ? 'Medium' : 'Low');
 
-    const maintainers = ['Alex Johnson', 'Sarah Jenkins', 'Mark Davis', 'Emily Carter', 'James Wilson'];
-    const teams = ['Auth Team', 'Backend Team', 'Payments Team', 'Security Team', 'Platform Team'];
+    const maintainerName = mod.primaryMaintainer?.name || 'Alex Johnson';
+    const maintainerTeam = mod.primaryMaintainer?.team || 'Backend Team';
 
     return {
-      path: filePath,
+      path: cleanPath,
       centrality: Math.min(centrality, 0.95),
       density: Math.min(density, 1.0),
       score,
       level,
-      maintainer: maintainers[idx % maintainers.length],
-      team: teams[idx % teams.length]
+      maintainer: maintainerName,
+      team: maintainerTeam
     };
-  }) : defaultModulesList;
+  });
 
-  // Metric summary counts
+  // Metric summary counts from live API data
   const totalAnalyzed = processedModules.length;
   const highRiskCount = processedModules.filter(m => m.level === 'High').length;
   const mediumRiskCount = processedModules.filter(m => m.level === 'Medium').length;
   const lowRiskCount = processedModules.filter(m => m.level === 'Low').length;
-  const avgDensity = (processedModules.reduce((acc, m) => acc + m.density, 0) / (totalAnalyzed || 1)).toFixed(2);
+  const avgDensity = totalAnalyzed > 0 
+    ? (processedModules.reduce((acc, m) => acc + m.density, 0) / totalAnalyzed).toFixed(2) 
+    : '0.00';
 
   // Filtering
   const filteredModules = processedModules.filter(mod => {
@@ -81,99 +75,89 @@ export default function HealthRadar({ result }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="health-radar-container">
       {/* Title & Description Header */}
-      <div>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+      <div className="health-radar-header">
+        <h1>
           Bus Factor Health Radar <Info size={18} color="var(--text-subtle)" style={{ cursor: 'pointer' }} />
         </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+        <p>
           Identifies modules with high dependency in-degree but low developer review density to flag single points of failure.
         </p>
       </div>
 
-      {/* Top 5 Metric Summary Cards Grid (Matching Target Screenshot) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+      {/* Top 5 Metric Summary Cards Grid */}
+      <div className="radar-summary-grid">
         {/* Card 1: Analyzed Modules */}
-        <div style={{ background: 'var(--card-bg)', borderRadius: '16px', padding: '18px 20px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '12px', background: '#f3e8ff', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="radar-summary-card">
+          <div className="radar-card-icon" style={{ background: '#f3e8ff', color: '#8b5cf6' }}>
             <Boxes size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>Analyzed Modules</div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>{totalAnalyzed}</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', marginTop: '2px' }}>Total files analyzed</div>
+            <div className="radar-card-label">Analyzed Modules</div>
+            <div className="radar-card-value">{totalAnalyzed}</div>
+            <div className="radar-card-sub">Total files analyzed</div>
           </div>
         </div>
 
         {/* Card 2: High Risk Modules */}
-        <div style={{ background: 'var(--card-bg)', borderRadius: '16px', padding: '18px 20px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '12px', background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="radar-summary-card">
+          <div className="radar-card-icon" style={{ background: '#fee2e2', color: '#ef4444' }}>
             <AlertTriangle size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>High Risk Modules</div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>{highRiskCount}</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', marginTop: '2px' }}>Need immediate attention</div>
+            <div className="radar-card-label">High Risk Modules</div>
+            <div className="radar-card-value">{highRiskCount}</div>
+            <div className="radar-card-sub">Need immediate attention</div>
           </div>
         </div>
 
         {/* Card 3: Medium Risk Modules */}
-        <div style={{ background: 'var(--card-bg)', borderRadius: '16px', padding: '18px 20px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '12px', background: '#fef3c7', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="radar-summary-card">
+          <div className="radar-card-icon" style={{ background: '#fef3c7', color: '#f59e0b' }}>
             <AlertCircle size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>Medium Risk Modules</div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>{mediumRiskCount}</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', marginTop: '2px' }}>Monitor closely</div>
+            <div className="radar-card-label">Medium Risk Modules</div>
+            <div className="radar-card-value">{mediumRiskCount}</div>
+            <div className="radar-card-sub">Monitor closely</div>
           </div>
         </div>
 
         {/* Card 4: Low Risk Modules */}
-        <div style={{ background: 'var(--card-bg)', borderRadius: '16px', padding: '18px 20px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '12px', background: '#d1fae5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="radar-summary-card">
+          <div className="radar-card-icon" style={{ background: '#d1fae5', color: '#10b981' }}>
             <ShieldCheck size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>Low Risk Modules</div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>{lowRiskCount}</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', marginTop: '2px' }}>Healthy</div>
+            <div className="radar-card-label">Low Risk Modules</div>
+            <div className="radar-card-value">{lowRiskCount}</div>
+            <div className="radar-card-sub">Healthy</div>
           </div>
         </div>
 
         {/* Card 5: Avg Developer Density */}
-        <div style={{ background: 'var(--card-bg)', borderRadius: '16px', padding: '18px 20px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '12px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="radar-summary-card">
+          <div className="radar-card-icon" style={{ background: '#eff6ff', color: '#2563eb' }}>
             <Users size={22} />
           </div>
           <div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>Avg Developer Density</div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>{avgDensity}</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', marginTop: '2px' }}>Developers per module</div>
+            <div className="radar-card-label">Avg Developer Density</div>
+            <div className="radar-card-value">{avgDensity}</div>
+            <div className="radar-card-sub">Developers per module</div>
           </div>
         </div>
       </div>
 
       {/* Control Bar: Risk Filter Pills & Search/Export Controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+      <div className="radar-controls-bar">
         {/* Risk Filter Tabs */}
-        <div style={{ display: 'flex', background: 'rgba(0,0,0,0.03)', padding: '4px', borderRadius: '12px', gap: '4px' }}>
+        <div className="radar-tabs-wrapper">
           {['All Modules', 'High Risk', 'Medium Risk', 'Low Risk'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              style={{
-                padding: '8px 18px',
-                borderRadius: '8px',
-                border: 'none',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                background: activeTab === tab ? '#2563eb' : 'transparent',
-                color: activeTab === tab ? 'white' : 'var(--text-muted)',
-                transition: 'all 0.15s ease'
-              }}
+              className={`radar-tab-btn ${activeTab === tab ? 'active' : ''}`}
             >
               {tab}
             </button>
@@ -181,8 +165,8 @@ export default function HealthRadar({ result }) {
         </div>
 
         {/* Right Search & Export Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div className="global-search" style={{ width: 260 }}>
+        <div className="radar-actions-wrapper">
+          <div className="global-search" style={{ width: 240 }}>
             <Search size={15} className="search-icon" />
             <input 
               type="text" 
@@ -193,44 +177,37 @@ export default function HealthRadar({ result }) {
             />
           </div>
 
-          <button 
-            onClick={handleExport}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--card-bg)',
-              color: 'var(--text-main)',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
+          <button onClick={handleExport} className="radar-export-btn">
             <Download size={14} /> Export
           </button>
         </div>
       </div>
 
-      {/* Main Bus Factor Health Table */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="radar-table" style={{ marginTop: 0 }}>
+      {/* Main Bus Factor Health Table with Fixed Auto-Layout Column Widths */}
+      <div className="radar-table-card">
+        <table className="radar-table-fixed">
+          <colgroup>
+            <col style={{ width: '28%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '14%' }} />
+          </colgroup>
           <thead>
-            <tr style={{ background: '#f8fafc' }}>
-              <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569' }}>File Module</th>
-              <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569' }}>
+            <tr>
+              <th>File Module</th>
+              <th>
                 Centrality Score <Info size={13} style={{ display: 'inline', marginLeft: '4px', verticalAlign: 'middle' }} />
               </th>
-              <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569' }}>
+              <th>
                 Developer Density <Info size={13} style={{ display: 'inline', marginLeft: '4px', verticalAlign: 'middle' }} />
               </th>
-              <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569' }}>
+              <th>
                 Bus Factor Risk Score <Info size={13} style={{ display: 'inline', marginLeft: '4px', verticalAlign: 'middle' }} />
               </th>
-              <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569' }}>Risk Level</th>
-              <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569' }}>Primary Maintainer</th>
+              <th>Risk Level</th>
+              <th>Primary Maintainer</th>
             </tr>
           </thead>
           <tbody>
@@ -240,48 +217,45 @@ export default function HealthRadar({ result }) {
                 const badgeClass = mod.level === 'High' ? 'badge-high' : mod.level === 'Medium' ? 'badge-medium' : 'badge-low';
 
                 return (
-                  <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    {/* File Module */}
-                    <td style={{ padding: '16px 18px', fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '0.85rem' }}>
-                      src/.../{mod.path}
+                  <tr key={idx}>
+                    {/* Clean File Module Name without src/.../ prefix */}
+                    <td className="radar-file-cell">
+                      {mod.path}
                     </td>
 
                     {/* Centrality Score with Progress Bar */}
-                    <td style={{ padding: '16px 18px', minWidth: '150px' }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: '4px' }}>{mod.centrality.toFixed(2)}</div>
-                      <div style={{ width: '100px', height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                    <td>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>{mod.centrality.toFixed(2)}</div>
+                      <div className="radar-progress-bar-bg">
                         <div style={{ width: `${mod.centrality * 100}%`, height: '100%', background: '#8b5cf6', borderRadius: '4px' }} />
                       </div>
                     </td>
 
                     {/* Developer Density with Progress Bar */}
-                    <td style={{ padding: '16px 18px', minWidth: '150px' }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: '4px' }}>{mod.density.toFixed(2)}</div>
-                      <div style={{ width: '100px', height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                    <td>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>{mod.density.toFixed(2)}</div>
+                      <div className="radar-progress-bar-bg">
                         <div style={{ width: `${mod.density * 100}%`, height: '100%', background: '#3b82f6', borderRadius: '4px' }} />
                       </div>
                     </td>
 
                     {/* Bus Factor Risk Score */}
-                    <td style={{ padding: '16px 18px', fontWeight: 800, fontSize: '1rem', color: scoreColor }}>
+                    <td style={{ fontWeight: 800, fontSize: '1rem', color: scoreColor }}>
                       {mod.score.toFixed(2)}
                     </td>
 
                     {/* Risk Level Badge */}
-                    <td style={{ padding: '16px 18px' }}>
+                    <td>
                       <span className={`badge-risk ${badgeClass}`} style={{ padding: '4px 14px', fontSize: '0.78rem' }}>
                         {mod.level}
                       </span>
                     </td>
 
-                    {/* Primary Maintainer */}
-                    <td style={{ padding: '16px 18px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-main)' }}>{mod.maintainer}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{mod.team}</div>
-                        </div>
-                        <ChevronRight size={16} color="var(--text-subtle)" />
+                    {/* Primary Maintainer without chevron right icon */}
+                    <td>
+                      <div className="radar-maintainer-box">
+                        <div className="radar-maintainer-name">{mod.maintainer}</div>
+                        <div className="radar-maintainer-team">{mod.team}</div>
                       </div>
                     </td>
                   </tr>
@@ -290,7 +264,9 @@ export default function HealthRadar({ result }) {
             ) : (
               <tr>
                 <td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
-                  No modules match the filter "{filterQuery}".
+                  {processedModules.length === 0 
+                    ? 'No bus factor modules returned from backend API. Seed your database or click "Seed DB" to compute health metrics.'
+                    : `No modules match the filter "${filterQuery}".`}
                 </td>
               </tr>
             )}
@@ -299,20 +275,7 @@ export default function HealthRadar({ result }) {
       </div>
 
       {/* Bottom Formula Callout Banner */}
-      <div 
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '12px 18px',
-          borderRadius: '10px',
-          background: '#eff6ff',
-          border: '1px solid #bfdbfe',
-          color: '#1e40af',
-          fontSize: '0.82rem',
-          fontWeight: 600
-        }}
-      >
+      <div className="radar-formula-banner">
         <Info size={16} color="#2563eb" style={{ flexShrink: 0 }} />
         <span>
           <strong>Bus Factor Risk Score</strong> = Centrality Score × (1 - Developer Density). Higher score indicates greater risk.

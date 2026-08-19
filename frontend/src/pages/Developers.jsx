@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Search, UserCheck } from 'lucide-react';
+import '../styles/Developers.css';
 
 export default function Developers({ developers = [] }) {
   const [filterQuery, setFilterQuery] = useState('');
 
-  const filteredDevs = developers.filter(dev =>
+  const filteredDevs = (developers || []).filter(dev =>
     (dev.name && dev.name.toLowerCase().includes(filterQuery.toLowerCase())) ||
     (dev.team && dev.team.toLowerCase().includes(filterQuery.toLowerCase())) ||
     (dev.tenure && dev.tenure.toLowerCase().includes(filterQuery.toLowerCase())) ||
@@ -12,17 +13,17 @@ export default function Developers({ developers = [] }) {
   );
 
   return (
-    <div className="card">
+    <div className="card developers-container">
       <div className="card-header">
         <h2 className="card-title">Developers</h2>
       </div>
 
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '8px' }}>
         Live engineering team members fetched directly from backend `/api/experts/developers`.
       </p>
 
       {/* Filter / Search Bar */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
         <div className="global-search" style={{ flex: 1, maxWidth: '100%' }}>
           <Search size={16} className="search-icon" />
           <input
@@ -34,90 +35,47 @@ export default function Developers({ developers = [] }) {
         </div>
       </div>
 
-      {/* Developers Grid */}
+      {/* Developers Grid with Developers.css auto-layout */}
       {filteredDevs.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+        <div className="developers-grid">
           {filteredDevs.map((dev, idx) => (
-            <div
-              key={dev.id || idx}
-              style={{
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-md)',
-                padding: '20px',
-                background: '#ffffff',
-                display: 'flex',
-                flexDirection: 'column',
-                justify: 'space-between'
-              }}
-            >
+            <div key={dev.id || idx} className="dev-card">
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
                   <img
                     src={dev.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80'}
                     alt={dev.name}
-                    style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid #e2e8f0'
-                    }}
+                    className="dev-avatar"
                   />
                   <div>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)' }}>{dev.name}</h3>
-                    <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#2563eb' }}>{dev.team || 'Engineering'}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{dev.tenure || 'Team Member'}</div>
+                    <h3 className="dev-name">{dev.name}</h3>
+                    <div className="dev-team">{dev.team || 'Engineering'}</div>
+                    <div className="dev-tenure">{dev.tenure || 'Team Member'}</div>
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    background: '#f8fafc',
-                    borderRadius: '8px',
-                    padding: '10px 12px',
-                    marginBottom: '16px',
-                    display: 'flex',
-                    justify: 'space-around',
-                    textAlign: 'center',
-                    fontSize: '0.78rem'
-                  }}
-                >
+                <div className="dev-stats-box">
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-main)' }}>ID</div>
+                    <div className="dev-stats-title">ID</div>
                     <div style={{ color: 'var(--text-muted)' }}>{dev.id}</div>
                   </div>
-                  <div style={{ borderLeft: '1px solid #e2e8f0' }} />
+                  <div style={{ borderLeft: '1px solid var(--border-color)' }} />
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#10b981' }}>Active</div>
+                    <div className="dev-stats-title" style={{ color: '#10b981' }}>Active</div>
                     <div style={{ color: 'var(--text-muted)' }}>Status</div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  className="btn-view-profile"
-                  style={{
-                    flex: 1,
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justify: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <UserCheck size={14} /> Assign Review
-                </button>
-              </div>
+              
             </div>
           ))}
         </div>
       ) : (
         <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          No developers returned from backend API. Seed your CognoDB database to display developers.
+          {developers.length === 0 
+            ? 'No developers returned from backend API. Seed your database or click "Seed DB" to load developers.'
+            : `No developers match the filter "${filterQuery}".`}
         </div>
       )}
     </div>

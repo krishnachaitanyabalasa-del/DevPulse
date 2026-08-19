@@ -67,7 +67,6 @@ export default function ReviewerRouter({ selectedFile, setSelectedFile, onSelect
                 </div>
               </div>
 
-              <button className="btn-view-profile" style={{ padding: '8px 16px', fontWeight: 700 }}>Assign PR</button>
             </div>
           ))
         ) : (

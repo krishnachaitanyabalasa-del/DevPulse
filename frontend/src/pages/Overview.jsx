@@ -1,6 +1,8 @@
 import React from 'react';
 import { Users, FolderGit2, GitPullRequest, FileText } from 'lucide-react';
 import MetricCard from '../components/MetricCard';
+import devPulseLogo from '../images/image.png';
+import '../styles/Overview.css';
 
 export default function Overview({ 
   developers = [], 
@@ -9,28 +11,16 @@ export default function Overview({
   pullRequests = []
 }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', paddingBottom: '32px' }}>
-      {/* Hero Section */}
-      <div 
-        style={{
-          position: 'relative',
-          borderRadius: '24px',
-          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #eff6ff 100%)',
-          padding: '48px 24px',
-          textAlign: 'center',
-          overflow: 'hidden',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 20px -4px rgba(0, 0, 0, 0.03)'
-        }}
-        className="overview-hero-card"
-      >
+    <div className="overview-container">
+      {/* Hero Section - Preserved Gradient & Constellation Background with image.png Logo */}
+      <div className="overview-hero-card">
         {/* Constellation SVG Network Background */}
         <svg 
           width="100%" 
           height="100%" 
-          viewBox="0 0 1000 300" 
+          viewBox="0 0 1000 240" 
           preserveAspectRatio="none"
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.45 }}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.4 }}
         >
           <defs>
             <linearGradient id="heroConstellationGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -40,75 +30,36 @@ export default function Overview({
             </linearGradient>
           </defs>
 
-          <path d="M0,150 Q250,80 500,160 T1000,120 V300 H0 Z" fill="url(#heroConstellationGrad)" />
+          <path d="M0,120 Q250,60 500,130 T1000,90 V240 H0 Z" fill="url(#heroConstellationGrad)" />
 
-          <line x1="80" y1="120" x2="200" y2="80" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
-          <line x1="200" y1="80" x2="350" y2="140" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
-          <line x1="350" y1="140" x2="520" y2="90" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
-          <line x1="520" y1="90" x2="680" y2="170" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
-          <line x1="680" y1="170" x2="850" y2="100" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
-          <line x1="850" y1="100" x2="950" y2="160" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="80" y1="90" x2="200" y2="60" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="200" y1="60" x2="350" y2="110" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="350" y1="110" x2="520" y2="70" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="520" y1="70" x2="680" y2="140" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="680" y1="140" x2="850" y2="80" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
+          <line x1="850" y1="80" x2="950" y2="130" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4 4" opacity="0.6" />
 
-          <circle cx="80" cy="120" r="4" fill="#a855f7" opacity="0.8" />
-          <circle cx="200" cy="80" r="6" fill="#3b82f6" opacity="0.8" />
-          <circle cx="350" cy="140" r="5" fill="#8b5cf6" opacity="0.8" />
-          <circle cx="520" cy="90" r="7" fill="#6366f1" opacity="0.9" />
-          <circle cx="680" cy="170" r="5" fill="#3b82f6" opacity="0.8" />
-          <circle cx="850" cy="100" r="6" fill="#a855f7" opacity="0.8" />
-          <circle cx="950" cy="160" r="4" fill="#8b5cf6" opacity="0.8" />
+          <circle cx="80" cy="90" r="4" fill="#a855f7" opacity="0.8" />
+          <circle cx="200" cy="60" r="5" fill="#3b82f6" opacity="0.8" />
+          <circle cx="350" cy="110" r="4" fill="#8b5cf6" opacity="0.8" />
+          <circle cx="520" cy="70" r="6" fill="#6366f1" opacity="0.9" />
+          <circle cx="680" cy="140" r="4" fill="#3b82f6" opacity="0.8" />
+          <circle cx="850" cy="80" r="5" fill="#a855f7" opacity="0.8" />
+          <circle cx="950" cy="130" r="4" fill="#8b5cf6" opacity="0.8" />
         </svg>
 
-        {/* Hero Content */}
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '750px', margin: '0 auto' }}>
-          <h1 
-            style={{ 
-              fontSize: '3.6rem', 
-              fontWeight: 800, 
-              letterSpacing: '-0.03em', 
-              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #6366f1 100%)', 
-              WebkitBackgroundClip: 'text', 
-              WebkitTextFillColor: 'transparent',
-              marginBottom: '12px',
-              lineHeight: 1.1
-            }}
-          >
-            DevPulse
-          </h1>
-
-          <h2 
-            style={{ 
-              fontSize: '1.25rem', 
-              fontWeight: 600, 
-              color: 'var(--text-main)', 
-              marginBottom: '16px',
-              letterSpacing: '-0.01em'
-            }}
-          >
-            Engineering Intelligence for Modern Teams
-          </h2>
-
-          <p 
-            style={{ 
-              fontSize: '0.98rem', 
-              fontStyle: 'italic', 
-              color: 'var(--text-muted)', 
-              margin: 0,
-              fontWeight: 500
-            }}
-          >
-            “ Understand your code. Empower your people. Elevate your engineering. ”
-          </p>
+        {/* Hero Image Content */}
+        <div className="overview-hero-content">
+          <img 
+            src={devPulseLogo} 
+            alt="DevPulse Engineering Intelligence" 
+            className="overview-hero-logo"
+          />
         </div>
       </div>
 
       {/* Metric Cards Grid */}
-      <section 
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '20px'
-        }}
-      >
+      <section className="overview-metrics-grid">
         <MetricCard 
           title="Developers" 
           value={developers.length} 
@@ -155,15 +106,7 @@ export default function Overview({
       </section>
 
       {/* Footer Copyright */}
-      <footer 
-        style={{
-          textAlign: 'center',
-          color: 'var(--text-subtle)',
-          fontSize: '0.85rem',
-          paddingTop: '20px',
-          fontWeight: 500
-        }}
-      >
+      <footer className="overview-footer">
         © 2026 DevPulse. All rights reserved.
       </footer>
     </div>

@@ -1,7 +1,11 @@
 package com.chaitu.devpulse.service;
 
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.neo4j.core.Neo4jClient;
@@ -18,9 +22,26 @@ public class SeedService {
 
     private static final Logger log = LoggerFactory.getLogger(SeedService.class);
     private final Neo4jClient neo4jClient;
+    private final Driver driver;
 
-    public SeedService(Neo4jClient neo4jClient) {
+    public SeedService(Neo4jClient neo4jClient, Driver driver) {
         this.neo4jClient = neo4jClient;
+        this.driver = driver;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void autoSeedOnStartupIfEmpty() {
+        try {
+            Long totalNodes = neo4jClient.query("MATCH (n) RETURN count(n) AS count").fetchAs(Long.class).one().orElse(0L);
+            if (totalNodes == 0L) {
+                log.info("Database is empty on startup (0 nodes). Auto-seeding graph database...");
+                seedDatabase();
+            } else {
+                log.info("Graph database ready with {} existing nodes.", totalNodes);
+            }
+        } catch (Exception ex) {
+            log.warn("Auto-seed check notice: {}", ex.getMessage());
+        }
     }
 
     public Map<String, Object> seedDatabase() {
@@ -36,18 +57,29 @@ public class SeedService {
             }
 
             List<String> statements = parseCypherStatements(cypherContent);
-            int executedCount = 0;
+            log.info("Parsed {} Cypher statements. Executing in transactional batches...", statements.size());
 
-            for (String statement : statements) {
-                if (!statement.isBlank()) {
-                    try {
-                        neo4jClient.query(statement).run();
-                        executedCount++;
-                    } catch (Exception ex) {
-                        log.warn("Cypher statement notice: {}", ex.getMessage());
-                    }
-                }
+            // 1. Wipe existing graph in transaction 1
+            try (Session session = driver.session()) {
+                session.executeWrite(tx -> {
+                    tx.run("MATCH (n) DETACH DELETE n");
+                    return null;
+                });
             }
+            log.info("Transaction 1 completed: Wiped existing graph database.");
+
+            // 2. Create nodes and relationships in transaction 2
+            try (Session session = driver.session()) {
+                session.executeWrite(tx -> {
+                    for (String statement : statements) {
+                        if (!statement.isBlank() && !statement.toUpperCase().contains("DETACH DELETE")) {
+                            tx.run(statement);
+                        }
+                    }
+                    return null;
+                });
+            }
+            log.info("Transaction 2 completed: Created all nodes & relationships.");
 
             Long totalNodes = 0L;
             Long totalRels = 0L;
@@ -57,8 +89,8 @@ public class SeedService {
             } catch (Exception ignored) {}
 
             result.put("seeded", true);
-            result.put("message", "Successfully seeded production-grade DevPulse graph from seed.cypher file! Executed " + executedCount + " statements.");
-            result.put("statementsExecuted", executedCount);
+            result.put("message", "Successfully seeded production-grade DevPulse graph from seed.cypher file!");
+            result.put("statementsExecuted", statements.size());
             result.put("nodesCreated", totalNodes);
             result.put("relationshipsCreated", totalRels);
 
@@ -71,32 +103,34 @@ public class SeedService {
     }
 
     private String readSeedCypherFile() {
-        // 1. Try reading from classpath resources
-        try {
-            Resource resource = new ClassPathResource("seed.cypher");
-            if (resource.exists()) {
-                try (InputStream is = resource.getInputStream()) {
-                    return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-                }
-            }
-        } catch (Exception ignored) {}
-
-        // 2. Try file system relative paths
         String[] possiblePaths = {
+                "src/main/resources/seed.cypher",
                 "seed/seed.cypher",
                 "backend/seed/seed.cypher",
-                "../seed/seed.cypher",
-                "src/main/resources/seed.cypher"
+                "../seed/seed.cypher"
         };
 
         for (String pathStr : possiblePaths) {
             File f = new File(pathStr);
             if (f.exists() && f.isFile()) {
                 try {
-                    return Files.readString(f.toPath(), StandardCharsets.UTF_8);
+                    String content = Files.readString(f.toPath(), StandardCharsets.UTF_8);
+                    log.info("Read seed file from disk: [{}] (Length: {})", f.getAbsolutePath(), content.length());
+                    return content;
                 } catch (Exception ignored) {}
             }
         }
+
+        try {
+            Resource resource = new ClassPathResource("seed.cypher");
+            if (resource.exists()) {
+                try (InputStream is = resource.getInputStream()) {
+                    String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                    log.info("Read seed file from classpath resource. Length: {}", content.length());
+                    return content;
+                }
+            }
+        } catch (Exception ignored) {}
 
         return null;
     }
@@ -107,12 +141,9 @@ public class SeedService {
 
         for (String line : content.split("\r?\n")) {
             String trimmed = line.trim();
+            // Only skip lines that are whole-line comments so URLs like https:// are not truncated!
             if (trimmed.startsWith("//") || trimmed.startsWith("#")) {
                 continue;
-            }
-            int commentIdx = line.indexOf("//");
-            if (commentIdx >= 0) {
-                line = line.substring(0, commentIdx);
             }
             sb.append(line).append("\n");
         }

@@ -1,27 +1,28 @@
 import React, { useState } from 'react';
 import { FolderGit2, Search, Code2, GitBranch, FileCode, CheckCircle2 } from 'lucide-react';
+import '../styles/Repositories.css';
 
 export default function Repositories({ repositories = [], files = [] }) {
   const [filterQuery, setFilterQuery] = useState('');
 
-  const filteredRepos = repositories.filter(repo =>
+  const filteredRepos = (repositories || []).filter(repo =>
     (repo.name && repo.name.toLowerCase().includes(filterQuery.toLowerCase())) ||
     (repo.language && repo.language.toLowerCase().includes(filterQuery.toLowerCase())) ||
     (repo.id && repo.id.toLowerCase().includes(filterQuery.toLowerCase()))
   );
 
   return (
-    <div className="card">
+    <div className="card repositories-container">
       <div className="card-header">
         <h2 className="card-title">Repositories</h2>
       </div>
 
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '8px' }}>
         Live codebase repositories, architectural languages, and indexed graph nodes from backend API.
       </p>
 
       {/* Filter / Search Bar */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
         <div className="global-search" style={{ flex: 1, maxWidth: '100%' }}>
           <Search size={16} className="search-icon" />
           <input
@@ -33,45 +34,23 @@ export default function Repositories({ repositories = [], files = [] }) {
         </div>
       </div>
 
-      {/* Repository Cards Grid */}
+      {/* Repository Cards Grid with Repositories.css auto-layout */}
       {filteredRepos.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
+        <div className="repositories-grid">
           {filteredRepos.map((repo, idx) => {
             const associatedFiles = files.slice(idx * 2, idx * 2 + 3);
 
             return (
-              <div
-                key={repo.id || idx}
-                style={{
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '20px',
-                  background: '#ffffff',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justify: 'space-between'
-                }}
-              >
+              <div key={repo.id || idx} className="repo-card">
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div
-                        style={{
-                          width: 38,
-                          height: 38,
-                          borderRadius: '8px',
-                          background: '#eff6ff',
-                          color: '#2563eb',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justify: 'center'
-                        }}
-                      >
+                  <div className="repo-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="repo-icon-box">
                         <FolderGit2 size={20} />
                       </div>
                       <div>
-                        <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)' }}>{repo.name}</h3>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        <h3 className="repo-title">{repo.name}</h3>
+                        <div className="repo-meta">
                           <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                             <GitBranch size={12} /> main
                           </span>
@@ -83,41 +62,19 @@ export default function Repositories({ repositories = [], files = [] }) {
                       </div>
                     </div>
 
-                    <span
-                      style={{
-                        padding: '3px 8px',
-                        borderRadius: '12px',
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        background: '#d1fae5',
-                        color: '#047857'
-                      }}
-                    >
+                    <span className="repo-status-badge">
                       Active
                     </span>
                   </div>
 
-                  <div style={{ marginBottom: '16px' }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-subtle)', marginBottom: '6px' }}>
+                  <div className="repo-files-section">
+                    <div className="repo-files-title">
                       INDEXED FILE MODULES ({files.length} Total)
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    <div className="repo-files-list">
                       {associatedFiles.length > 0 ? (
                         associatedFiles.map((f, i) => (
-                          <span
-                            key={i}
-                            style={{
-                              background: '#f1f5f9',
-                              color: '#334155',
-                              padding: '4px 8px',
-                              borderRadius: '6px',
-                              fontSize: '0.75rem',
-                              fontFamily: 'var(--font-mono)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
+                          <span key={i} className="repo-file-chip">
                             <FileCode size={11} color="#64748b" /> {f.path}
                           </span>
                         ))
@@ -128,29 +85,16 @@ export default function Repositories({ repositories = [], files = [] }) {
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    justify: 'space-between',
-                    alignItems: 'center',
-                    paddingTop: '12px',
-                    borderTop: '1px solid var(--border-color)',
-                    fontSize: '0.8rem',
-                    color: 'var(--text-muted)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <CheckCircle2 size={14} color="#10b981" />
-                    <span>CognoDB Node: {repo.id}</span>
-                  </div>
-                </div>
+                
               </div>
             );
           })}
         </div>
       ) : (
         <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          No repositories found from backend API. Seed your CognoDB database to display repositories.
+          {repositories.length === 0 
+            ? 'No repositories returned from backend API. Seed your database or click "Seed DB" to load repositories.'
+            : `No repositories match the filter "${filterQuery}".`}
         </div>
       )}
     </div>
