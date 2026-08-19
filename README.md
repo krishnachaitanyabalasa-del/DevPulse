@@ -13,9 +13,6 @@ The application is backed by CognoDB Cloud, using openCypher and the Neo4j-compa
 - Hosted Application (Website): https://devpulse-mu-ten.vercel.app/
 - Demo Link (Screen Recording Video): https://drive.google.com/file/d/1AmU4-e7sz7LuXscq-j1LLA5zYRngZDBE/view?usp=sharing
 - Hosted Backend API: https://devpulse-qpvz.onrender.com
-- API Health Endpoint: https://devpulse-qpvz.onrender.com/api/health
-- GitHub Repository: https://github.com/krishnachaitanyabalasa-del/DevPulse
-- Assignment Submission Target: hr@wexa.ai
 
 ---
 
